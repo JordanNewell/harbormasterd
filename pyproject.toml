@@ -1,0 +1,70 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "port-authority"
+version = "1.0.0"
+description = "Zero-conflict port management with automatic HTTPS and DNS for local development"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Curtis AI", email = "hello@portauthority.dev"}
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development :: Build Tools",
+    "Topic :: Utilities",
+]
+keywords = ["port", "development", "local-dev", "dns", "tls", "https"]
+requires-python = ">=3.9"
+
+dependencies = [
+    "click>=8.0.0",
+    "requests>=2.28.0",
+    "psutil>=5.9.0",
+    "pyyaml>=6.0",
+    "colorama>=0.4.6",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "mypy>=1.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/curtis-ai/port-authority"
+Documentation = "https://github.com/curtis-ai/port-authority#readme"
+Repository = "https://github.com/curtis-ai/port-authority"
+Issues = "https://github.com/curtis-ai/port-authority/issues"
+
+[project.scripts]
+pa = "pa_platform:main"
+pad = "pad_pro:main"
+
+[tool.setuptools]
+packages = ["port_authority"]
+
+[tool.setuptools.package-data]
+port_authority = ["data/*.yaml", "drivers/*"]
+
+[tool.black]
+line-length = 100
+target-version = ['py39', 'py310', 'py311']
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
