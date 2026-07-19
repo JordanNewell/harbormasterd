@@ -1,4 +1,27 @@
-﻿# 🚢 Port Authority Development History
+﻿# v1.0.1 — Credibility Patch (2026-07-18)
+
+**Goal:** Make v1.0.0 PyPI-publishable as an MIT-licensed OSS launch candidate.
+
+## Fixes
+
+- **Packaging**: `pyproject.toml` declared non-existent `port_authority/` package. Switched to flat `py-modules` layout. `pip install port-authority` now installs working `pa`, `pa-platform`, `pad` console scripts.
+- **Security**: Removed hardcoded admin token default (`curtis-port-authority-pro`). Daemon now auto-generates a per-install token via `token_store.py` (keyring primary, `~/.port-authority/daemon.token` mode-600 fallback). Env var `PAD_ADMIN_TOKEN` overrides. Use `pa print-token` to retrieve.
+- **CI**: Workflow triggered on `main` (repo has `master`), ran `pa.py selftest` (requires daemon — fails in CI), published on every push with no tag filter. Now: triggers on `master` push + `v*` tags, runs import smoke test + token_store unit tests, publishes only on `v*` tags.
+- **Branding**: De-branded "Curtis AI" (internal venture name) → "Port Authority" / "Jordan Newell". LICENSE copyright updated. ~60 references across 18 files.
+- **README**: Replaced references to non-existent files (`port_authority_daemon.py`, `core/port-authority/pad_pro.py`).
+- **Layout**: Renamed `pad_pro.py` → `pad.py`. Renamed `pad_pro.db` → `pad.db`. Added `main()` functions to support console-script entry points.
+- **Cleanup**: Removed dead `import keyring` from `pa_platform.py`. Stopped shipping stale `data/pad_pro.db` SQLite.
+
+## What's next (v1.1)
+
+- `src/port_authority/` package layout for public API surface
+- Merge `pa` + `pa-platform` into a single CLI with subcommands
+- Per-platform install wizard (Homebrew formula, Scoop manifest, AUR PKGBUILD)
+- Integration tests that don't require root for DNS/TLS install paths
+
+---
+
+# 🚢 Port Authority Development History
 
 **Project**: Port Authority  
 **Transformation**: Tool → Platform  
