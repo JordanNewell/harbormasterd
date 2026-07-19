@@ -3,9 +3,21 @@
 🧪 Port Authority Integration Test Suite
 Comprehensive cross-platform testing for the complete platform
 
+⚠️  SCOPE NOTE (v1.0.1, 2026-07-19):
+The full orchestrator (run_all_tests / `python test_integration.py`) covers
+13 test categories against endpoints that are NOT YET IMPLEMENTED on the
+daemon. The daemon currently exposes only: /events, /spawn, /reserve, /health.
+Tests for /who, /release, /block, /kill, /scan, /leases, /bind, /renew, and
+others will fail with HTTP 404 until those endpoints ship (targeted for a
+future release). The pytest path (`pytest test_integration.py`) only
+exercises test_daemon_health (now guarded with pytest.skip if daemon down)
+and depends on the orchestrator for the rest. Token-store and connection
+tests (test_token_store.py, test_connection.py) are independent of the
+daemon and pass cleanly.
+
 Test Coverage:
 - Routing & TLS: HTTPS with trusted certificates
-- Conflicts: Automatic port reassignment 
+- Conflicts: Automatic port reassignment
 - Blocks: Policy enforcement
 - Lease lifecycle: Reserve → bind → renew → release
 - WebSockets: Real-time communication

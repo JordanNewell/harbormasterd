@@ -11,6 +11,10 @@
 - **README**: Replaced references to non-existent files (`port_authority_daemon.py`, `core/port-authority/pad_pro.py`).
 - **Layout**: Renamed `pad_pro.py` → `pad.py`. Renamed `pad_pro.db` → `pad.db`. Added `main()` functions to support console-script entry points.
 - **Cleanup**: Removed dead `import keyring` from `pa_platform.py`. Stopped shipping stale `data/pad_pro.db` SQLite.
+- **Windows Unicode** (2026-07-19, post-launch verification): `pa` and `pa-platform` CLIs crashed on Windows with `UnicodeEncodeError` when printing help text containing the 🚢 emoji (U+1F6A2) — Windows stdout defaults to cp1252. Both CLIs now reconfigure stdout/stderr to UTF-8 with `errors='replace'` at `main()` entry.
+- **Version sync** (2026-07-19): Three hardcoded `"1.0.0"` strings in `pad.py` (FastAPI app metadata, `/health` response, `system.started` event) now match `pyproject.toml` `1.0.1`.
+- **Test scope honesty** (2026-07-19): `test_integration.py` orchestrator covers 13 categories against endpoints not yet implemented on the daemon. Only `/events`, `/spawn`, `/reserve`, `/health` exist today. Header comment now documents this so cloners running `python test_integration.py` aren't surprised by 404s. Pytest path + `test_token_store.py` + `test_connection.py` are unaffected.
+- **Email hygiene** (2026-07-19): `pyproject.toml` author email was `jordan@example.com` placeholder — propagates to PyPI Author-email metadata. Replaced with verified GitHub noreply `58616955+JordanNewell@users.noreply.github.com`.
 
 ## What's next (v1.1)
 
@@ -18,6 +22,7 @@
 - Merge `pa` + `pa-platform` into a single CLI with subcommands
 - Per-platform install wizard (Homebrew formula, Scoop manifest, AUR PKGBUILD)
 - Integration tests that don't require root for DNS/TLS install paths
+- Implement remaining daemon endpoints (`/who`, `/release`, `/block`, `/kill`, `/scan`, `/leases`, `/bind`, `/renew`) so the full integration suite can actually run
 
 ---
 
