@@ -81,3 +81,17 @@ def test_token_file_is_created_on_windows(tmp_path):
     assert token_file.exists()
     # File should be readable (contents are the token)
     assert len(token_file.read_text()) >= 32
+
+
+def test_empty_token_file_treated_as_missing(monkeypatch, tmp_path):
+    """Empty token file should be treated as missing, not as valid empty token."""
+    monkeypatch.delenv(TOKEN_ENV_VAR, raising=False)
+    token_file = tmp_path / "daemon.token"
+    token_file.write_text("")
+    with patch("token_store._token_file_path", return_value=token_file), \
+         patch("token_store.keyring") as mock_keyring:
+        mock_keyring.get_password.return_value = None
+        mock_keyring.set_password.return_value = None
+        # Should regenerate (not return empty string)
+        result = get_or_create_token()
+    assert result and len(result) >= 32

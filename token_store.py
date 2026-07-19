@@ -29,14 +29,27 @@ def _read_file_token() -> Optional[str]:
     f = _token_file_path()
     if not f.exists():
         return None
-    return f.read_text().strip()
+    content = f.read_text(encoding="utf-8").strip()
+    if not content:
+        # Empty/corrupted file — treat as missing, allow regeneration
+        return None
+    return content
 
 
 def _write_file_token(token: str) -> None:
     f = _token_file_path()
-    f.parent.mkdir(parents=True, exist_ok=True)
-    f.write_text(token)
-    os.chmod(f, stat.S_IRUSR | stat.S_IWUSR)  # 0600
+    f.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    # Re-assert dir mode in case it already existed with looser perms
+    try:
+        os.chmod(f.parent, stat.S_IRWXU)
+    except OSError:
+        pass
+    # Open with mode 0600 directly — no TOCTOU window
+    fd = os.open(str(f), os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    try:
+        os.write(fd, token.encode("utf-8"))
+    finally:
+        os.close(fd)
 
 
 def _read_keyring_token() -> Optional[str]:
@@ -44,7 +57,12 @@ def _read_keyring_token() -> Optional[str]:
         return None
     try:
         return keyring.get_password(KEYRING_SERVICE, KEYRING_USER)
-    except Exception:
+    except keyring.errors.KeyringError as exc:
+        # Keyring backend error — log and treat as no token (regeneration will retry)
+        import logging
+        logging.getLogger("token_store").warning(
+            "keyring read failed: %s; falling back to file token", exc
+        )
         return None
 
 
