@@ -36,10 +36,12 @@ from typing import Dict, List, Optional, Any
 from pathlib import Path
 from datetime import datetime
 
+from token_store import get_token, get_or_create_token
+
 # Configuration
 DEFAULT_PAD_URL = "http://127.0.0.1:9999"
 PAD_URL = os.getenv("PAD_URL", DEFAULT_PAD_URL)
-ADMIN_TOKEN = os.getenv("PAD_ADMIN_TOKEN", "curtis-port-authority-pro")
+ADMIN_TOKEN = get_token() or ""  # Empty forces auth failure with clear message
 
 # Framework detection patterns
 FRAMEWORK_PATTERNS = {
@@ -111,7 +113,7 @@ class PAClient:
             
             if response.status_code == 404:
                 click.echo(f"❌ Port Authority daemon not running at {self.base_url}")
-                click.echo(f"   Start it with: python core/port-authority/pad_pro.py")
+                click.echo(f"   Start it with: pad")
                 sys.exit(1)
             
             if not response.ok:
@@ -127,7 +129,7 @@ class PAClient:
             
         except requests.exceptions.ConnectionError:
             click.echo(f"❌ Could not connect to Port Authority daemon at {self.base_url}")
-            click.echo(f"   Start it with: python core/port-authority/pad_pro.py")
+            click.echo(f"   Start it with: pad")
             sys.exit(1)
         except requests.exceptions.Timeout:
             click.echo(f"❌ Request timed out")
@@ -724,6 +726,14 @@ def doctor(ctx):
             click.echo(f"\n✅ No port conflicts detected")
     except:
         click.echo("\n❌ Could not check for conflicts (daemon not running?)")
+
+@cli.command(name="print-token")
+def print_token():
+    """Print the current admin token.
+
+    Use for: export PAD_ADMIN_TOKEN="$(pa print-token)"
+    """
+    click.echo(get_or_create_token())
 
 def main():
     cli()

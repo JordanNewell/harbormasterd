@@ -32,6 +32,7 @@ from pathlib import Path
 from datetime import datetime
 import psutil
 from contextlib import contextmanager
+from token_store import get_token
 try:
     from dns_resolver import CrossPlatformDNSInstaller
     from tls_manager import TLSManager
@@ -101,7 +102,7 @@ class ContextManager:
         # Default configuration for new contexts
         default_config = {
             "daemon_url": "http://127.0.0.1:9999",
-            "admin_token": os.getenv("PAD_ADMIN_TOKEN", "curtis-port-authority-pro"),
+            "admin_token": get_token() or "",
             "namespace": "default",
             "ephemeral_start": 60000,
             "ephemeral_end": 65000,
@@ -380,7 +381,7 @@ def create(name, daemon_url, namespace):
     config = {
         "daemon_url": daemon_url,
         "namespace": namespace,
-        "admin_token": os.getenv("PAD_ADMIN_TOKEN", "curtis-port-authority-pro"),
+        "admin_token": get_token() or "",
         "gateway": {"enabled": True, "domain": "pa.local"},
         "dns": {"enabled": False},
         "tls": {"enabled": False}
