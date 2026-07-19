@@ -35,8 +35,6 @@ from contextlib import contextmanager
 from datetime import datetime, timedelta
 from abc import ABC, abstractmethod
 
-from token_store import get_or_create_token
-
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -85,9 +83,7 @@ def detect_ephemeral_range() -> Tuple[int, int]:
 # Global configuration
 EPHEMERAL_START, EPHEMERAL_END = detect_ephemeral_range()
 FAMOUS_PORTS = [3000, 3001, 5000, 5173, 8000, 8080, 9000, 9090, 9093]
-ADMIN_TOKEN = get_or_create_token()
-logger.info(f"Admin token: {ADMIN_TOKEN}")
-logger.info("Clients must set PAD_ADMIN_TOKEN=<token> or use 'pa print-token'")
+ADMIN_TOKEN = os.getenv("PAD_ADMIN_TOKEN") or ""  # Set at startup, not import
 
 # Process tracking
 _managed_processes: Dict[int, subprocess.Popen] = {}
@@ -810,6 +806,12 @@ async def startup():
 
 def main():
     """Entry point for the `pad` console script."""
+    global ADMIN_TOKEN
+    from token_store import get_or_create_token
+    ADMIN_TOKEN = get_or_create_token()
+    logger.info(f"Admin token: {ADMIN_TOKEN}")
+    logger.info("Clients must set PAD_ADMIN_TOKEN=<token> or use 'pa print-token'")
+
     import uvicorn
     config = {
         "host": os.environ.get("PAD_HOST", "127.0.0.1"),
