@@ -806,6 +806,23 @@ async def startup():
 
 def main():
     """Entry point for the `pad` console script."""
+    import argparse
+    parser = argparse.ArgumentParser(
+        prog="pad",
+        description="Port Authority daemon — long-running background service.",
+    )
+    parser.add_argument("--host", default=os.environ.get("PAD_HOST", "127.0.0.1"),
+                        help="Bind host (env: PAD_HOST, default: 127.0.0.1)")
+    parser.add_argument("--port", type=int, default=int(os.environ.get("PAD_PORT", "9999")),
+                        help="Bind port (env: PAD_PORT, default: 9999)")
+    parser.add_argument("--log-level", default=os.environ.get("PAD_LOG_LEVEL", "info"),
+                        dest="log_level",
+                        help="Uvicorn log level: debug|info|warning|error (env: PAD_LOG_LEVEL)")
+    parser.add_argument("--reload", action="store_true",
+                        default=bool(os.environ.get("PAD_RELOAD")),
+                        help="Enable auto-reload for development (env: PAD_RELOAD)")
+    args = parser.parse_args()
+
     global ADMIN_TOKEN
     from token_store import get_or_create_token
     ADMIN_TOKEN = get_or_create_token()
@@ -813,14 +830,8 @@ def main():
     logger.info("Clients must set PAD_ADMIN_TOKEN=<token> or use 'pa print-token'")
 
     import uvicorn
-    config = {
-        "host": os.environ.get("PAD_HOST", "127.0.0.1"),
-        "port": int(os.environ.get("PAD_PORT", "9999")),
-        "log_level": os.environ.get("PAD_LOG_LEVEL", "info"),
-    }
-    if os.environ.get("PAD_RELOAD"):
-        config["reload"] = True
-    uvicorn.run(app, **config)
+    uvicorn.run(app, host=args.host, port=args.port,
+                log_level=args.log_level, reload=args.reload)
 
 
 if __name__ == "__main__":
