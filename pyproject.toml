@@ -28,12 +28,15 @@ keywords = ["port", "development", "local-dev", "dns", "tls", "https"]
 requires-python = ">=3.9"
 
 dependencies = [
-    "click>=8.0.0",
-    "requests>=2.28.0",
+    "click>=8.1.0",
+    "requests>=2.31.0",
     "psutil>=5.9.0",
-    "pyyaml>=6.0",
-    "keyring>=24.0.0",
+    "pyyaml>=6.0.1",
+    "keyring>=24.2.0",
     "colorama>=0.4.6",
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "cryptography>=41.0.0",
 ]
 
 [project.optional-dependencies]
@@ -58,9 +61,12 @@ pad = "pad:main"
 
 [tool.setuptools]
 py-modules = ["pa", "pa_platform", "pad", "token_store", "dns_resolver", "tls_manager"]
+packages = ["data", "drivers"]
+include-package-data = true
 
 [tool.setuptools.package-data]
-"*" = ["data/policy.yaml", "drivers/caddy.py"]
+data = ["*.yaml"]
+drivers = ["*.py"]
 
 [tool.black]
 line-length = 100
