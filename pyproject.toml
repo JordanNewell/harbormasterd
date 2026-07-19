@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "port-authority"
+name = "harbormasterd"
 version = "1.0.1"
 description = "Zero-conflict port management with automatic HTTPS and DNS for local development"
 readme = "README.md"
@@ -49,10 +49,10 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/JordanNewell/port-authority"
-Documentation = "https://github.com/JordanNewell/port-authority#readme"
-Repository = "https://github.com/JordanNewell/port-authority"
-Issues = "https://github.com/JordanNewell/port-authority/issues"
+Homepage = "https://github.com/JordanNewell/harbormasterd"
+Documentation = "https://github.com/JordanNewell/harbormasterd#readme"
+Repository = "https://github.com/JordanNewell/harbormasterd"
+Issues = "https://github.com/JordanNewell/harbormasterd/issues"
 
 [project.scripts]
 pa = "pa:main"

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🚢 Port Authority CLI
+🚢 Harbormasterd CLI
 Transform from tool → platform with contexts, routing, DNS/TLS, policy, and observability
 
 Platform Commands:
@@ -44,12 +44,12 @@ except ImportError:
     from tls_manager import TLSManager
 
 # Enhanced configuration with contexts
-CONTEXTS_DIR = Path.home() / ".port-authority" / "contexts"
+CONTEXTS_DIR = Path.home() / ".harbormasterd" / "contexts"
 CONTEXTS_DIR.mkdir(parents=True, exist_ok=True)
 DEFAULT_CONTEXT = "local"
 
 class ContextManager:
-    """Manage multiple Port Authority contexts (local, team, codespace, etc.)"""
+    """Manage multiple Harbormasterd contexts (local, team, codespace, etc.)"""
     
     def __init__(self):
         self.contexts_dir = CONTEXTS_DIR
@@ -116,7 +116,7 @@ class ContextManager:
             },
             "tls": {
                 "enabled": False,
-                "ca_path": str(Path.home() / ".port-authority" / "ca")
+                "ca_path": str(Path.home() / ".harbormasterd" / "ca")
             }
         }
         
@@ -129,7 +129,7 @@ class ContextManager:
 ctx_mgr = ContextManager()
 
 class EnhancedPAClient:
-    """Enhanced Port Authority client with platform features"""
+    """Enhanced Harbormasterd client with platform features"""
     
     def __init__(self, context: str = None):
         self.context = context or ctx_mgr.get_current_context()
@@ -152,7 +152,7 @@ class EnhancedPAClient:
             response = requests.request(method, url, headers=headers, timeout=30, **kwargs)
             
             if response.status_code == 404:
-                click.echo(f"❌ Port Authority daemon not running at {self.base_url}")
+                click.echo(f"❌ Harbormasterd daemon not running at {self.base_url}")
                 click.echo(f"   Start it with: pa daemon start")
                 sys.exit(1)
             
@@ -168,7 +168,7 @@ class EnhancedPAClient:
             return response.json()
             
         except requests.exceptions.ConnectionError:
-            click.echo(f"❌ Could not connect to Port Authority daemon")
+            click.echo(f"❌ Could not connect to Harbormasterd daemon")
             click.echo(f"   Context: {self.context}")
             click.echo(f"   URL: {self.base_url}")
             click.echo(f"   Try: pa daemon start")
@@ -329,7 +329,7 @@ tls_mgr = TLSManagerWrapper()
 @click.option('--context', help='Use specific context')
 @click.pass_context
 def cli(ctx, context):
-    """🚢 Port Authority - Zero-thinking port management"""
+    """🚢 Harbormasterd - Zero-thinking port management"""
     ctx.ensure_object(dict)
     
     if context:
@@ -342,7 +342,7 @@ def cli(ctx, context):
         
     # Show context in header
     if ctx.info_name == 'cli':  # Only on main command
-        click.echo(f"🚢 Port Authority")
+        click.echo(f"🚢 Harbormasterd")
         click.echo(f"📍 Context: {ctx.obj['context']}")
 
 @cli.group()
@@ -503,13 +503,13 @@ def status():
 @cli.command()
 @click.pass_context
 def metrics(ctx):
-    """Show Port Authority metrics dashboard"""
+    """Show Harbormasterd metrics dashboard"""
     client = ctx.obj['client']
     
     try:
         metrics = client.get_metrics()
         
-        click.echo("📊 Port Authority Metrics")
+        click.echo("📊 Harbormasterd Metrics")
         click.echo("=" * 40)
         
         # Key metrics
@@ -539,7 +539,7 @@ def top(ctx):
     """Live TUI monitoring of ports and processes"""
     client = ctx.obj['client']
     
-    click.echo("📊 Port Authority Live Monitor (Ctrl+C to exit)")
+    click.echo("📊 Harbormasterd Live Monitor (Ctrl+C to exit)")
     click.echo("=" * 60)
     
     try:
@@ -548,7 +548,7 @@ def top(ctx):
             click.clear()
             
             # Header
-            click.echo(f"🚢 Port Authority - Context: {ctx.obj['context']}")
+            click.echo(f"🚢 Harbormasterd - Context: {ctx.obj['context']}")
             click.echo(f"⏰ {datetime.now().strftime('%H:%M:%S')}")
             click.echo("=" * 60)
             
@@ -669,7 +669,7 @@ def selftest(ctx, comprehensive, json_output):
             sys.exit(1)
     
     # Standard self-test (enhanced)
-    click.echo("🧪 Port Authority Self-Test")
+    click.echo("🧪 Harbormasterd Self-Test")
     click.echo("=" * 50)
     
     tests_passed = 0
@@ -869,7 +869,7 @@ def selftest(ctx, comprehensive, json_output):
     else:
         if tests_passed == total_tests:
             click.echo(f"🎉 All {total_tests}/{total_tests} tests passed! ({total_time:.1f}s)")
-            click.echo("✅ Port Authority is ready for production use")
+            click.echo("✅ Harbormasterd is ready for production use")
         elif tests_passed >= 6:
             click.echo(f"✅ {tests_passed}/{total_tests} tests passed ({total_time:.1f}s)")
             click.echo("✅ Core functionality working, some features optional")

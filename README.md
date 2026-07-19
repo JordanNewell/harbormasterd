@@ -1,8 +1,8 @@
-# 🚢 Port Authority
+# 🚢 Harbormasterd
 
 > **Zero-thinking port management with automatic HTTPS and DNS for local development**
 
-Port Authority transforms local development by providing intelligent port management, automatic HTTPS certificates, and seamless DNS resolution. No more port conflicts, manual certificate setup, or remembering localhost URLs.
+Harbormasterd transforms local development by providing intelligent port management, automatic HTTPS certificates, and seamless DNS resolution. No more port conflicts, manual certificate setup, or remembering localhost URLs.
 
 ## ✨ Key Features
 
@@ -51,7 +51,7 @@ pa run --name=myapp --prefer=3000 python app.py
 
 ## 🖥️ Two CLIs
 
-Port Authority ships three entry points:
+Harbormasterd ships three entry points:
 
 | Command | Module | Purpose |
 |---|---|---|
@@ -362,8 +362,8 @@ pa selftest --comprehensive
 
 ## 🤝 Support
 
-- **Issues**: [GitHub Issues](https://github.com/JordanNewell/port-authority/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/JordanNewell/port-authority/discussions)  
+- **Issues**: [GitHub Issues](https://github.com/JordanNewell/harbormasterd/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/JordanNewell/harbormasterd/discussions)  
 - **Documentation**: Complete guides and API reference
 - **Community**: Discord server for real-time support
 
@@ -379,13 +379,13 @@ Ready to eliminate port management friction from your development workflow?
 
 ```bash
 # One command to rule them all
-pa selftest --comprehensive && echo "🚢 Welcome aboard the Port Authority platform!"
+pa selftest --comprehensive && echo "🚢 Welcome aboard the Harbormasterd platform!"
 ```
 
-**Port Authority**: Because developers should focus on building, not managing infrastructure.
+**Harbormasterd**: Because developers should focus on building, not managing infrastructure.
 
 ---
 
-*Developed with ❤️ by the Port Authority maintainers*  
+*Developed with ❤️ by the Harbormasterd maintainers*  
 *Platform tested on Windows 11, macOS Ventura, Ubuntu 22.04*  
 *Comprehensive CI/CD pipeline validates every commit across 9 platform combinations*

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🚢 Port Authority - Zero-config local development ports
+🚢 Harbormasterd - Zero-config local development ports
 The unfair advantage for development teams
 
 New Features:
@@ -43,7 +43,7 @@ logging.basicConfig(
 logger = logging.getLogger("PAD")
 
 app = FastAPI(
-    title="Port Authority",
+    title="Harbormasterd",
     description="Zero-config local development port management",
     version="1.0.1"
 )
@@ -798,7 +798,7 @@ async def startup():
     task_thread = threading.Thread(target=background_tasks, daemon=True)
     task_thread.start()
     
-    logger.info(f"🚢 Port Authority started")
+    logger.info(f"🚢 Harbormasterd started")
     logger.info(f"📊 Ephemeral range: {EPHEMERAL_START}-{EPHEMERAL_END}")
     logger.info(f"🌐 Gateway domain: {policy.policy.get('gateway', {}).get('domain', 'pa.local')}")
     
@@ -809,7 +809,7 @@ def main():
     import argparse
     parser = argparse.ArgumentParser(
         prog="pad",
-        description="Port Authority daemon — long-running background service.",
+        description="Harbormasterd daemon — long-running background service.",
     )
     parser.add_argument("--host", default=os.environ.get("PAD_HOST", "127.0.0.1"),
                         help="Bind host (env: PAD_HOST, default: 127.0.0.1)")

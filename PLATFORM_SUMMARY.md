@@ -1,8 +1,8 @@
-# 🚢 Port Authority - Complete System
+# 🚢 Harbormasterd - Complete System
 
 **From Tool → Platform: The Evolution Complete**
 
-We've successfully transformed the Port Authority from a simple port management tool into a comprehensive development platform that delivers an unfair advantage to development teams.
+We've successfully transformed the Harbormasterd from a simple port management tool into a comprehensive development platform that delivers an unfair advantage to development teams.
 
 ## 🎯 Problem Solved
 
@@ -16,7 +16,7 @@ We've successfully transformed the Port Authority from a simple port management 
 
 | Component | File | Purpose |
 |-----------|------|---------|
-| **Port Authority Daemon** | `pad.py` | FastAPI service with SQLite registry, socket guards, real-time events |
+| **Harbormasterd Daemon** | `pad.py` | FastAPI service with SQLite registry, socket guards, real-time events |
 | **Platform CLI** | `pa_platform.py` | Enhanced CLI with contexts, routes, DNS/TLS, policy management |
 | **Original CLI** | `pa.py` | Simple CLI for basic operations |
 | **Quick Setup** | `install.py` | 60-second installation and configuration |
@@ -99,10 +99,10 @@ pa selftest        # End-to-end validation
 
 ### Basic Conflict Resolution
 ```bash
-# Before Port Authority
+# Before Harbormasterd
 npm start  # ❌ Error: Port 3000 already in use
 
-# After Port Authority  
+# After Harbormasterd  
 pa run --name web -- npm start
 # ✅ Spawned 'npm start' for web on port 60001
 # 🌐 URL: http://web.pa.local
@@ -152,7 +152,7 @@ pa run --name web -- npm start
 ### Quick Setup (60 seconds)
 ```bash
 # Install and configure everything
-python core/port-authority/install.py
+python core/harbormasterd/install.py
 
 # Start the daemon
 pad
@@ -212,7 +212,7 @@ pa share web                    # Team collaboration (ready)
 
 ## 🎉 Summary
 
-**Port Authority is a world-class development port management platform** that:
+**Harbormasterd is a world-class development port management platform** that:
 
 - ✅ **Eliminates port conflicts forever**
 - ✅ **Provides beautiful *.pa.local URLs**  
@@ -225,7 +225,7 @@ The system is **production-ready** and **demo-ready**. The architecture supports
 
 ---
 
-**🚢 Port Authority**  
+**🚢 Harbormasterd**  
 *Making port conflicts a thing of the past.*
 
 **Ready to ship!** 🚀

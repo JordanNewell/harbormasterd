@@ -1,10 +1,10 @@
-# 🧪 Port Authority Testing Guide
+# 🧪 Harbormasterd Testing Guide
 
-This document describes the testing strategy and CI/CD pipeline for the Port Authority platform.
+This document describes the testing strategy and CI/CD pipeline for the Harbormasterd platform.
 
 ## Overview
 
-The Port Authority platform includes comprehensive testing across multiple dimensions:
+The Harbormasterd platform includes comprehensive testing across multiple dimensions:
 
 - **Cross-platform compatibility** (Ubuntu, macOS, Windows)  
 - **Python version support** (3.9, 3.10, 3.11)
@@ -115,7 +115,7 @@ Each test run produces:
 - `selftest-results.json` - Quick test results
 - `comprehensive-results.json` - Full integration results  
 - `system-info.json` - Platform details
-- `port_authority.log` - Daemon logs (if available)
+- `harbormasterd.log` - Daemon logs (if available)
 
 ### Success Criteria
 
@@ -145,7 +145,7 @@ Results stored as artifacts for historical analysis.
 ### Quick Local Test
 ```bash
 # Start daemon
-python port_authority_daemon.py &
+python harbormasterd_daemon.py &
 
 # Run self-test
 python pa_platform.py selftest
@@ -184,9 +184,9 @@ pa tls list
 
 1. **Daemon Connection Failed**
    ```
-   ❌ Could not connect to Port Authority daemon
+   ❌ Could not connect to Harbormasterd daemon
    ```
-   **Solution**: Start daemon with `python port_authority_daemon.py`
+   **Solution**: Start daemon with `python harbormasterd_daemon.py`
 
 2. **DNS Resolution Failing**
    ```
@@ -266,8 +266,8 @@ Download test artifacts from failed runs:
 - ⚠️ Basic validation  
 - ❌ Not covered
 
-The comprehensive testing ensures Port Authority works reliably across all supported platforms and provides a smooth zero-config developer experience.
+The comprehensive testing ensures Harbormasterd works reliably across all supported platforms and provides a smooth zero-config developer experience.
 
 ---
 
-🚢 **Ready to test?** Start with `pa selftest` and build confidence in your Port Authority setup!
+🚢 **Ready to test?** Start with `pa selftest` and build confidence in your Harbormasterd setup!

@@ -1,7 +1,7 @@
-# Product Requirement Document (PRD): Port Authority
+# Product Requirement Document (PRD): Harbormasterd
 
 ## 1. Executive Summary
-Port Authority is a "zero-thinking" port management platform for local development. It automates HTTPS certificate generation, local DNS resolution (`*.pa.local`), and intelligent port conflict resolution, eliminating the friction of manual networking configuration for developers.
+Harbormasterd is a "zero-thinking" port management platform for local development. It automates HTTPS certificate generation, local DNS resolution (`*.pa.local`), and intelligent port conflict resolution, eliminating the friction of manual networking configuration for developers.
 
 ## 2. Problem Statement
 Developers often waste time managing `localhost` port conflicts, manually setting up `mkcert` or self-signed certificates, and editing `/etc/hosts` or the Windows `hosts` file. These manual tasks are error-prone and disrupt the development flow, especially when working on multi-service micro-frontend or API architectures.

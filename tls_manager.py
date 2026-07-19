@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🔐 Port Authority TLS Manager
+🔐 Harbormasterd TLS Manager
 Zero-config HTTPS with mkcert integration and fallback to Caddy internal CA
 
 Features:
@@ -334,7 +334,7 @@ class MkcertManager:
             print(f"📜 Generating certificate for {', '.join(all_domains)}...")
             
             # Create certificates directory
-            cert_dir = Path.home() / ".port-authority" / "certificates"
+            cert_dir = Path.home() / ".harbormasterd" / "certificates"
             cert_dir.mkdir(parents=True, exist_ok=True)
             
             # Generate certificate
@@ -382,7 +382,7 @@ class CaddyCAManager:
     """Manage Caddy internal CA certificates"""
     
     def __init__(self, caddy_data_dir: Path = None, admin_url: str = "http://localhost:2019"):
-        self.caddy_data_dir = caddy_data_dir or (Path.home() / ".port-authority" / "caddy")
+        self.caddy_data_dir = caddy_data_dir or (Path.home() / ".harbormasterd" / "caddy")
         self.admin_url = admin_url
         self.ca_dir = self.caddy_data_dir / "pki" / "authorities" / "local"
     
@@ -508,7 +508,7 @@ class CaddyCAManager:
         """Install CA on Linux"""
         try:
             # Save to ca-certificates directory
-            ca_cert_path = Path("/usr/local/share/ca-certificates/port-authority-caddy-ca.crt")
+            ca_cert_path = Path("/usr/local/share/ca-certificates/harbormasterd-caddy-ca.crt")
             
             with tempfile.NamedTemporaryFile(mode='w', delete=False) as f:
                 f.write(ca_cert)
@@ -550,7 +550,7 @@ class TLSManager:
         self.prefer_mkcert = prefer_mkcert
         self.mkcert = MkcertManager()
         self.caddy_ca = CaddyCAManager()
-        self.cert_dir = Path.home() / ".port-authority" / "certificates"
+        self.cert_dir = Path.home() / ".harbormasterd" / "certificates"
         self.cert_dir.mkdir(parents=True, exist_ok=True)
     
     def setup(self) -> Dict[str, Any]:
@@ -684,7 +684,7 @@ class TLSManager:
             # Certificate details
             subject = issuer = x509.Name([
                 x509.NameAttribute(NameOID.COMMON_NAME, f"*.{self.domain}"),
-                x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Port Authority"),
+                x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Harbormasterd"),
                 x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, "Development")
             ])
             
@@ -837,7 +837,7 @@ if __name__ == "__main__":
     # Test/demo mode
     tls_mgr = TLSManager()
     
-    print("🔐 Port Authority TLS Manager")
+    print("🔐 Harbormasterd TLS Manager")
     print("=" * 50)
     
     if len(sys.argv) > 1 and sys.argv[1] == "setup":

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🚀 Port Authority - Quick Setup
+🚀 Harbormasterd - Quick Setup
 Install dependencies, create aliases, and get started in 60 seconds
 """
 
@@ -60,7 +60,7 @@ def create_aliases():
         ps_profile = ps_profile_dir / "Microsoft.PowerShell_profile.ps1"
         
         aliases = f"""
-# Port Authority aliases
+# Harbormasterd aliases
 function pad {{ python "{pad_script}" $args }}
 function pa {{ python "{pa_script}" $args }}
 """
@@ -78,7 +78,7 @@ function pa {{ python "{pa_script}" $args }}
             shell_rc = Path.home() / ".zshrc"
         
         aliases = f"""
-# Port Authority aliases
+# Harbormasterd aliases
 alias pad='python {pad_script}'
 alias pa='python {pa_script}'
 """
@@ -93,7 +93,7 @@ def setup_directories():
     print("📁 Setting up directories...")
     
     # Context directory
-    contexts_dir = Path.home() / ".port-authority" / "contexts"
+    contexts_dir = Path.home() / ".harbormasterd" / "contexts"
     contexts_dir.mkdir(parents=True, exist_ok=True)
     
     # Data directory
@@ -101,7 +101,7 @@ def setup_directories():
     data_dir.mkdir(exist_ok=True)
     
     # CA directory for TLS
-    ca_dir = Path.home() / ".port-authority" / "ca"
+    ca_dir = Path.home() / ".harbormasterd" / "ca"
     ca_dir.mkdir(parents=True, exist_ok=True)
     
     print("✅ Directories created!")
@@ -128,7 +128,7 @@ def run_selftest():
         
         # Test CLI responsiveness
         result = run_command(f'{sys.executable} "{pa_script}" --help', check=False)
-        if result and "Port Authority" in result:
+        if result and "Harbormasterd" in result:
             print("✅ CLI is working!")
             return True
         else:
@@ -141,7 +141,7 @@ def run_selftest():
 
 def show_next_steps():
     """Show what to do next"""
-    print("\n🎉 Port Authority is ready!")
+    print("\n🎉 Harbormasterd is ready!")
     print("=" * 50)
     
     print("\n🚀 Quick Start:")
@@ -173,7 +173,7 @@ def show_next_steps():
 
 def main():
     """Main installation flow"""
-    print("🚢 Port Authority - Quick Setup")
+    print("🚢 Harbormasterd - Quick Setup")
     print("=" * 60)
     
     steps = [

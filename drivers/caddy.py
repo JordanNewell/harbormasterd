@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🌐 Caddy Gateway Driver for Port Authority
+🌐 Caddy Gateway Driver for Harbormasterd
 Zero-config HTTPS and DNS integration with automatic TLS certificates
 
 Features:
@@ -32,7 +32,7 @@ class CaddyDriver:
         self.caddy_bin = self.config.get("caddy_bin", "caddy")
         self.admin_url = self.config.get("admin_url", "http://localhost:2019")
         self.domain = self.config.get("domain", "pa.local")
-        self.data_dir = Path(self.config.get("data_dir", Path.home() / ".port-authority" / "caddy"))
+        self.data_dir = Path(self.config.get("data_dir", Path.home() / ".harbormasterd" / "caddy"))
         self.config_file = self.data_dir / "Caddyfile"
         self.process = None
         
@@ -110,7 +110,7 @@ class CaddyDriver:
         
         # Main Caddyfile - minimal and stable
         lines = [
-            "# Port Authority - Caddy Configuration",
+            "# Harbormasterd - Caddy Configuration",
             "# Auto-generated - do not edit manually",
             "",
             "{",
@@ -128,7 +128,7 @@ class CaddyDriver:
             "",
             "# Catch-all for unconfigured services",
             f"*.{self.domain} {{",
-            "    respond `<h1>Port Authority</h1><p>No service configured for <strong>{http.request.host}</strong></p><p>Configure with: <code>pa routes add {http.request.host} http://127.0.0.1:PORT</code></p>` 404",
+            "    respond `<h1>Harbormasterd</h1><p>No service configured for <strong>{http.request.host}</strong></p><p>Configure with: <code>pa routes add {http.request.host} http://127.0.0.1:PORT</code></p>` 404",
             "    tls internal",
             "}",
         ]
@@ -271,7 +271,7 @@ class CaddyDriver:
                         
                 else:
                     # Unix systems - save CA and provide instructions
-                    ca_file = Path.home() / ".port-authority" / "caddy-ca.crt"
+                    ca_file = Path.home() / ".harbormasterd" / "caddy-ca.crt"
                     ca_file.write_text(ca_cert_pem)
                     
                     logger.info(f"CA certificate saved to: {ca_file}")
@@ -448,7 +448,7 @@ class CaddyDriver:
                 "error": str(e)
             }
 
-# Integration with Port Authority platform
+# Integration with Harbormasterd platform
 def create_caddy_driver(config: Dict[str, Any] = None) -> CaddyDriver:
     """Factory function to create Caddy driver"""
     return CaddyDriver(config)

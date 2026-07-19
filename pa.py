@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🚢 Port Authority CLI (pa)
+🚢 Harbormasterd CLI (pa)
 Zero-thinking port management for development teams
 
 Commands:
@@ -94,14 +94,14 @@ FRAMEWORK_PATTERNS = {
 }
 
 class PAClient:
-    """Port Authority API client"""
+    """Harbormasterd API client"""
     
     def __init__(self, base_url: str = PAD_URL, admin_token: str = ADMIN_TOKEN):
         self.base_url = base_url.rstrip('/')
         self.admin_token = admin_token
         
     def _request(self, method: str, path: str, admin: bool = False, **kwargs) -> Dict[str, Any]:
-        """Make HTTP request to Port Authority daemon"""
+        """Make HTTP request to Harbormasterd daemon"""
         url = f"{self.base_url}{path}"
         headers = kwargs.pop('headers', {})
         
@@ -112,7 +112,7 @@ class PAClient:
             response = requests.request(method, url, headers=headers, timeout=30, **kwargs)
             
             if response.status_code == 404:
-                click.echo(f"❌ Port Authority daemon not running at {self.base_url}")
+                click.echo(f"❌ Harbormasterd daemon not running at {self.base_url}")
                 click.echo(f"   Start it with: pad")
                 sys.exit(1)
             
@@ -128,7 +128,7 @@ class PAClient:
             return response.json()
             
         except requests.exceptions.ConnectionError:
-            click.echo(f"❌ Could not connect to Port Authority daemon at {self.base_url}")
+            click.echo(f"❌ Could not connect to Harbormasterd daemon at {self.base_url}")
             click.echo(f"   Start it with: pad")
             sys.exit(1)
         except requests.exceptions.Timeout:
@@ -284,10 +284,10 @@ def format_port_status(port_data: Dict[str, Any]) -> str:
 
 # CLI Commands
 @click.group()
-@click.option('--url', default=PAD_URL, help='Port Authority daemon URL')
+@click.option('--url', default=PAD_URL, help='Harbormasterd daemon URL')
 @click.pass_context
 def cli(ctx, url):
-    """🚢 Port Authority - Zero-thinking port management"""
+    """🚢 Harbormasterd - Zero-thinking port management"""
     ctx.ensure_object(dict)
     ctx.obj['client'] = PAClient(url)
 
@@ -595,7 +595,7 @@ def health(ctx):
     try:
         result = client.health()
         
-        click.echo(f"🚢 Port Authority v{result.get('version', '?')}")
+        click.echo(f"🚢 Harbormasterd v{result.get('version', '?')}")
         click.echo(f"Status: {result['status'].upper()}")
         
         uptime_sec = result.get('uptime', 0)
@@ -650,7 +650,7 @@ def events(ctx):
                         elif event_type == 'lease.auto_healed':
                             click.echo(f"🏥 {timestamp} AUTO-HEALED port {event_data.get('port')} for {event_data.get('owner')}")
                         elif event_type == 'system.started':
-                            click.echo(f"🚢 {timestamp} Port Authority started v{event_data.get('version')}")
+                            click.echo(f"🚢 {timestamp} Harbormasterd started v{event_data.get('version')}")
                         else:
                             click.echo(f"📨 {timestamp} {event_type.upper()}: {json.dumps(event_data, indent=2)}")
                     except json.JSONDecodeError:
@@ -665,7 +665,7 @@ def events(ctx):
 @click.pass_context
 def doctor(ctx):
     """Diagnose project ports and suggest .pa.yaml config"""
-    click.echo("🩺 Port Authority Doctor")
+    click.echo("🩺 Harbormasterd Doctor")
     click.echo("─" * 50)
     
     # Detect framework

@@ -1,7 +1,7 @@
-"""Secure admin token storage for Port Authority daemon.
+"""Secure admin token storage for Harbormasterd daemon.
 
 Primary: system keyring.
-Fallback: ~/.port-authority/daemon.token (mode 600).
+Fallback: ~/.harbormasterd/daemon.token (mode 600).
 Override: PAD_ADMIN_TOKEN environment variable always wins.
 """
 import os
@@ -17,12 +17,12 @@ except ImportError:
     KEYRING_AVAILABLE = False
 
 TOKEN_ENV_VAR = "PAD_ADMIN_TOKEN"
-KEYRING_SERVICE = "port-authority"
+KEYRING_SERVICE = "harbormasterd"
 KEYRING_USER = "daemon"
 
 
 def _token_file_path() -> Path:
-    return Path.home() / ".port-authority" / "daemon.token"
+    return Path.home() / ".harbormasterd" / "daemon.token"
 
 
 def _read_file_token() -> Optional[str]:

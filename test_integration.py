@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🧪 Port Authority Integration Test Suite
+🧪 Harbormasterd Integration Test Suite
 Comprehensive cross-platform testing for the complete platform
 
 ⚠️  SCOPE NOTE (v1.0.1, 2026-07-19):
@@ -90,7 +90,7 @@ class TestHarness:
         
     def run_all_tests(self) -> Dict[str, Any]:
         """Run complete test suite"""
-        print("🧪 Port Authority Integration Tests")
+        print("🧪 Harbormasterd Integration Tests")
         print("=" * 60)
         print(f"Platform: {self.platform} ({platform.release()})")
         print(f"Python: {sys.version.split()[0]}")
@@ -1005,7 +1005,7 @@ if __name__ == '__main__':
         print("✅ Cleanup completed")
 
 # Pytest integration
-class TestPortAuthority:
+class TestHarbormasterd:
     """Pytest test class"""
     
     @classmethod
@@ -1032,7 +1032,7 @@ def main():
     """Main test runner"""
     import argparse
     
-    parser = argparse.ArgumentParser(description='Port Authority Integration Tests')
+    parser = argparse.ArgumentParser(description='Harbormasterd Integration Tests')
     parser.add_argument('--daemon-url', default=TEST_CONFIG['daemon_url'], 
                        help='Daemon URL')
     parser.add_argument('--admin-token', default=TEST_CONFIG['admin_token'],

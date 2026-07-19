@@ -4,11 +4,11 @@
 
 ## Fixes
 
-- **Packaging**: `pyproject.toml` declared non-existent `port_authority/` package. Switched to flat `py-modules` layout. `pip install port-authority` now installs working `pa`, `pa-platform`, `pad` console scripts.
-- **Security**: Removed hardcoded admin token default (`curtis-port-authority-pro`). Daemon now auto-generates a per-install token via `token_store.py` (keyring primary, `~/.port-authority/daemon.token` mode-600 fallback). Env var `PAD_ADMIN_TOKEN` overrides. Use `pa print-token` to retrieve.
+- **Packaging**: `pyproject.toml` declared non-existent `harbormasterd/` package. Switched to flat `py-modules` layout. `pip install harbormasterd` now installs working `pa`, `pa-platform`, `pad` console scripts.
+- **Security**: Removed hardcoded admin token default (`curtis-port-authority-pro`). Daemon now auto-generates a per-install token via `token_store.py` (keyring primary, `~/.harbormasterd/daemon.token` mode-600 fallback). Env var `PAD_ADMIN_TOKEN` overrides. Use `pa print-token` to retrieve.
 - **CI**: Workflow triggered on `main` (repo has `master`), ran `pa.py selftest` (requires daemon — fails in CI), published on every push with no tag filter. Now: triggers on `master` push + `v*` tags, runs import smoke test + token_store unit tests, publishes only on `v*` tags.
-- **Branding**: De-branded "Curtis AI" (internal venture name) → "Port Authority" / "Jordan Newell". LICENSE copyright updated. ~60 references across 18 files.
-- **README**: Replaced references to non-existent files (`port_authority_daemon.py`, `core/port-authority/pad_pro.py`).
+- **Branding**: De-branded "Curtis AI" (internal venture name) → "Harbormasterd" / "Jordan Newell". LICENSE copyright updated. ~60 references across 18 files.
+- **README**: Replaced references to non-existent files (`harbormasterd_daemon.py`, `core/harbormasterd/pad_pro.py`).
 - **Layout**: Renamed `pad_pro.py` → `pad.py`. Renamed `pad_pro.db` → `pad.db`. Added `main()` functions to support console-script entry points.
 - **Cleanup**: Removed dead `import keyring` from `pa_platform.py`. Stopped shipping stale `data/pad_pro.db` SQLite.
 - **Windows Unicode** (2026-07-19, post-launch verification): `pa` and `pa-platform` CLIs crashed on Windows with `UnicodeEncodeError` when printing help text containing the 🚢 emoji (U+1F6A2) — Windows stdout defaults to cp1252. Both CLIs now reconfigure stdout/stderr to UTF-8 with `errors='replace'` at `main()` entry.
@@ -18,7 +18,7 @@
 
 ## What's next (v1.1)
 
-- `src/port_authority/` package layout for public API surface
+- `src/harbormasterd/` package layout for public API surface
 - Merge `pa` + `pa-platform` into a single CLI with subcommands
 - Per-platform install wizard (Homebrew formula, Scoop manifest, AUR PKGBUILD)
 - Integration tests that don't require root for DNS/TLS install paths
@@ -26,17 +26,17 @@
 
 ---
 
-# 🚢 Port Authority Development History
+# 🚢 Harbormasterd Development History
 
-**Project**: Port Authority  
+**Project**: Harbormasterd  
 **Transformation**: Tool → Platform  
 **Development Period**: August 2025  
 **Platform**: Windows (PowerShell 7.5.2)  
-**Environment**: E:\dev\projects\curtis\core\port-authority\  
+**Environment**: E:\dev\projects\curtis\core\harbormasterd\  
 
 ## 📋 Executive Summary
 
-Port Authority evolved from a basic port management tool into a comprehensive zero-config platform for local development HTTPS, DNS resolution, and intelligent port management. This document chronicles the complete transformation, implementations, and testing infrastructure created.
+Harbormasterd evolved from a basic port management tool into a comprehensive zero-config platform for local development HTTPS, DNS resolution, and intelligent port management. This document chronicles the complete transformation, implementations, and testing infrastructure created.
 
 ## 🎯 Project Objectives Achieved
 
@@ -134,7 +134,7 @@ class TLSManager:
 **Context Management System**:
 ```python
 class ContextManager:
-    """Manage multiple Port Authority contexts (local, team, codespace, etc.)"""
+    """Manage multiple Harbormasterd contexts (local, team, codespace, etc.)"""
     
     def create_context(self, name: str, config: Dict[str, Any])
     def get_context_config(self, context: str = None) -> Dict[str, Any]
@@ -144,7 +144,7 @@ class ContextManager:
 **Enhanced PA Client**:
 ```python
 class EnhancedPAClient:
-    """Enhanced Port Authority client with platform features"""
+    """Enhanced Harbormasterd client with platform features"""
     
     def spawn_with_namespace(self, name: str, cmd: List[str], **kwargs)
     def get_routes(self) -> List[Dict[str, Any]]
@@ -201,7 +201,7 @@ pa selftest [--comprehensive]      # System validation
 #### Test Suite Architecture
 ```python
 class TestHarness:
-    """Comprehensive integration testing for Port Authority platform"""
+    """Comprehensive integration testing for Harbormasterd platform"""
     
     def __init__(self, config: Dict[str, Any])
     def run_all_tests(self) -> Dict[str, Any]
@@ -315,7 +315,7 @@ python pa_platform.py selftest --comprehensive --json > comprehensive-results.js
 - `selftest-results.json`: Quick test results
 - `comprehensive-results.json`: Full integration results
 - `system-info.json`: Platform and environment details
-- `port_authority.log`: Daemon logs (when available)
+- `harbormasterd.log`: Daemon logs (when available)
 
 #### CI Features
 - **Test Summary Generation**: Automated markdown summaries
@@ -329,7 +329,7 @@ python pa_platform.py selftest --comprehensive --json > comprehensive-results.js
 
 ### Directory Structure
 ```
-E:\dev\projects\curtis\core\port-authority\
+E:\dev\projects\curtis\core\harbormasterd\
 ├── dns_resolver.py              # Cross-platform DNS resolver
 ├── tls_manager.py               # TLS certificate management  
 ├── pa_platform.py               # Enhanced platform CLI
@@ -396,7 +396,7 @@ results = harness.run_all_tests()
 
 #### Quick Self-Test Performance
 ```
-🧪 Port Authority Self-Test
+🧪 Harbormasterd Self-Test
 ==================================================
 1️⃣ Testing daemon connectivity...
    ✅ Daemon healthy (v2.1.0)
@@ -466,7 +466,7 @@ Resolution working: ❌ False
 pip install -r requirements.txt
 
 # 2. Start daemon  
-python port_authority_daemon.py &
+python harbormasterd_daemon.py &
 
 # 3. Validate installation
 pa selftest
@@ -501,12 +501,12 @@ pa run --name=myapp --prefer=3000 python app.py
 ### CI Integration
 ```yaml
 # Add to your project's GitHub Actions
-- name: Validate Port Authority Platform
+- name: Validate Harbormasterd Platform
   run: |
-    pip install -r port-authority/requirements.txt
-    python port-authority/port_authority_daemon.py &
+    pip install -r harbormasterd/requirements.txt
+    python harbormasterd/harbormasterd_daemon.py &
     sleep 3
-    python port-authority/pa_platform.py selftest --json
+    python harbormasterd/pa_platform.py selftest --json
 ```
 
 ---
@@ -612,7 +612,7 @@ pa run --name=myapp --prefer=3000 python app.py
 
 ## 🏆 Project Completion Summary
 
-**Port Authority** has been successfully transformed from a simple port management tool into a comprehensive zero-config platform for local development. The implementation includes:
+**Harbormasterd** has been successfully transformed from a simple port management tool into a comprehensive zero-config platform for local development. The implementation includes:
 
 ### Core Platform Features ✅
 - ✅ Cross-platform DNS resolver (`*.pa.local`)
@@ -642,7 +642,7 @@ pa run --name=myapp --prefer=3000 python app.py
 - ✅ Graceful error handling and fallbacks
 - ✅ Performance monitoring and optimization
 
-**The Port Authority platform is now ready for production deployment and provides developers with a truly zero-thinking port management experience across all major operating systems.**
+**The Harbormasterd platform is now ready for production deployment and provides developers with a truly zero-thinking port management experience across all major operating systems.**
 
 ---
 

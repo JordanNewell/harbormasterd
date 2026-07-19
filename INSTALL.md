@@ -1,23 +1,23 @@
-# 🚢 Install Port Authority
+# 🚢 Install Harbormasterd
 
 ## One-Line Install (Coming Soon)
 
 ```bash
-curl -sSf https://install.portauthority.dev | sh
+curl -sSf https://install.harbormasterd.dev | sh
 ```
 
 ## Install from PyPI (Coming Soon)
 
 ```bash
-pip install port-authority
+pip install harbormasterd
 ```
 
 ## Manual Install
 
 ```bash
 # Clone the repo
-git clone https://github.com/JordanNewell/port-authority.git
-cd port-authority
+git clone https://github.com/JordanNewell/harbormasterd.git
+cd harbormasterd
 
 # Install dependencies
 pip install -r requirements.txt
@@ -55,7 +55,7 @@ pa selftest
 
 Expected output:
 ```
-✅ Port Authority is ready!
+✅ Harbormasterd is ready!
    - Daemon: running (port 9999)
    - DNS: configured
    - TLS: ready

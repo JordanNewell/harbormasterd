@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🌐 Port Authority DNS Resolver
+🌐 Harbormasterd DNS Resolver
 Zero-config local DNS for *.pa.local domains
 
 Features:
@@ -432,7 +432,7 @@ class CrossPlatformDNSInstaller:
         try:
             # Create resolved config drop-in
             config_dir = Path("/etc/systemd/resolved.conf.d")
-            config_file = config_dir / "port-authority.conf"
+            config_file = config_dir / "harbormasterd.conf"
             
             config_content = f"""[Resolve]
 Domains=~{self.domain}
@@ -517,7 +517,7 @@ DNS={self.resolver_ip}:{self.resolver_port}
                 hosts_content = ""
             
             # Add our entries if not present
-            marker = f"# Port Authority - {self.domain}"
+            marker = f"# Harbormasterd - {self.domain}"
             if marker not in hosts_content:
                 new_entries = f"\n{marker}\n127.0.0.1 *.{self.domain}\n::1 *.{self.domain}\n"
                 
@@ -632,7 +632,7 @@ DNS={self.resolver_ip}:{self.resolver_port}
     def _uninstall_linux(self) -> bool:
         """Remove Linux DNS configuration"""
         try:
-            config_file = Path("/etc/systemd/resolved.conf.d/port-authority.conf")
+            config_file = Path("/etc/systemd/resolved.conf.d/harbormasterd.conf")
             if config_file.exists():
                 subprocess.run(["sudo", "rm", str(config_file)], check=True)
                 subprocess.run(["sudo", "systemctl", "restart", "systemd-resolved"], check=True)
@@ -667,7 +667,7 @@ if __name__ == "__main__":
     # Test/demo mode
     installer = CrossPlatformDNSInstaller()
     
-    print("🌐 Port Authority DNS Resolver")
+    print("🌐 Harbormasterd DNS Resolver")
     print("=" * 50)
     
     if len(sys.argv) > 1 and sys.argv[1] == "install":
