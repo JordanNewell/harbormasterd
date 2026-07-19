@@ -19,7 +19,6 @@ We've successfully transformed the Port Authority from a simple port management 
 | **Port Authority Daemon** | `pad.py` | FastAPI service with SQLite registry, socket guards, real-time events |
 | **Platform CLI** | `pa_platform.py` | Enhanced CLI with contexts, routes, DNS/TLS, policy management |
 | **Original CLI** | `pa.py` | Simple CLI for basic operations |
-| **External Integration** | `../system-controller.js` | Seamless integration with the wider ecosystem |
 | **Quick Setup** | `install.py` | 60-second installation and configuration |
 
 ### Key Platform Pillars Implemented
@@ -213,7 +212,7 @@ pa share web                    # Team collaboration (ready)
 
 ## 🎉 Summary
 
-**Jordan Newell now has a world-class development port management platform** that:
+**Port Authority is a world-class development port management platform** that:
 
 - ✅ **Eliminates port conflicts forever**
 - ✅ **Provides beautiful *.pa.local URLs**  
