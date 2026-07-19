@@ -9,7 +9,7 @@ description = "Zero-conflict port management with automatic HTTPS and DNS for lo
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
-    {name = "Jordan Newell", email = "jordan@example.com"}
+    {name = "Jordan Newell", email = "58616955+JordanNewell@users.noreply.github.com"}
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
