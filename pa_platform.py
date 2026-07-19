@@ -939,6 +939,11 @@ def run(ctx, name, prefer, ttl, env, command):
         sys.exit(1)
 
 def main():
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except (AttributeError, OSError):
+        pass
     cli()
 
 

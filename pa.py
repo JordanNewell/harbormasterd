@@ -736,6 +736,11 @@ def print_token():
     click.echo(get_or_create_token())
 
 def main():
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except (AttributeError, OSError):
+        pass
     cli()
 
 
