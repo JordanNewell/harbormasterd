@@ -1,5 +1,6 @@
 data/*.db
 data/*.db-journal
+data/*.jsonl
 __pycache__/
 *.pyc
 *.egg-info/
