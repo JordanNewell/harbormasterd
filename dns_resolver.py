@@ -432,7 +432,7 @@ class CrossPlatformDNSInstaller:
         try:
             # Create resolved config drop-in
             config_dir = Path("/etc/systemd/resolved.conf.d")
-            config_file = config_dir / "curtis-pa.conf"
+            config_file = config_dir / "port-authority.conf"
             
             config_content = f"""[Resolve]
 Domains=~{self.domain}
@@ -632,7 +632,7 @@ DNS={self.resolver_ip}:{self.resolver_port}
     def _uninstall_linux(self) -> bool:
         """Remove Linux DNS configuration"""
         try:
-            config_file = Path("/etc/systemd/resolved.conf.d/curtis-pa.conf")
+            config_file = Path("/etc/systemd/resolved.conf.d/port-authority.conf")
             if config_file.exists():
                 subprocess.run(["sudo", "rm", str(config_file)], check=True)
                 subprocess.run(["sudo", "systemctl", "restart", "systemd-resolved"], check=True)

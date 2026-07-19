@@ -508,7 +508,7 @@ class CaddyCAManager:
         """Install CA on Linux"""
         try:
             # Save to ca-certificates directory
-            ca_cert_path = Path("/usr/local/share/ca-certificates/curtis-caddy-ca.crt")
+            ca_cert_path = Path("/usr/local/share/ca-certificates/port-authority-caddy-ca.crt")
             
             with tempfile.NamedTemporaryFile(mode='w', delete=False) as f:
                 f.write(ca_cert)
