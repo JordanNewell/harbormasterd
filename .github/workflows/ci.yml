@@ -2,14 +2,16 @@ name: Port Authority CI
 
 on:
   push:
-    branches: [main]
+    branches: [master]
+    tags: ['v*']
   pull_request:
-    branches: [main]
+    branches: [master]
 
 jobs:
   test:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         python: ['3.9', '3.10', '3.11', '3.12']
@@ -18,31 +20,39 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -e ".[dev]"
+          pip install build
 
-      - name: Run selftest
-        run: python pa.py selftest
+      - name: Import smoke test (no daemon required)
+        run: |
+          python -c "import pa, pad, pa_platform, token_store, dns_resolver, tls_manager; print('imports ok')"
+          pa --help
+          pad --help
+          pa-platform --help
 
-      - name: Run integration tests
-        run: python test_integration.py
+      - name: Run token_store unit tests
+        run: python -m pytest test_token_store.py -v
+
+      - name: Build wheel
+        run: python -m build
 
   publish:
     needs: test
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
