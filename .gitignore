@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+
+# Runtime data
+data/*.db
+data/*.db-journal
+data/*.jsonl
+
+# Local-only files
+mailmap.txt
+.env
+
+# Internal / pre-rewrite backups
+.git.backup-pre-rewrite/
+docs/superpowers/

@@ -1,0 +1,10 @@
+audit_enabled: true
+auto_heal: true
+block_patterns:
+- ^.*(3000|3001|80|443)$
+gateway:
+  auto_tls: true
+  domain: pa.local
+  enabled: true
+max_ttl: 86400
+require_admin_for_kill: true
