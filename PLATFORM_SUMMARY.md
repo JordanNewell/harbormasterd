@@ -25,7 +25,7 @@ We've successfully transformed the Port Authority from a simple port management 
 
 #### 1. 🌍 **Contexts & Namespaces**
 ```bash
-pa context create team --daemon-url https://team.dev.curtis.ai
+pa context create team --daemon-url https://team.example.com
 pa context use team
 pa run --name web -- npm start  # Runs in team/web namespace
 ```

@@ -334,7 +334,7 @@ class MkcertManager:
             print(f"📜 Generating certificate for {', '.join(all_domains)}...")
             
             # Create certificates directory
-            cert_dir = Path.home() / ".curtis" / "certificates"
+            cert_dir = Path.home() / ".port-authority" / "certificates"
             cert_dir.mkdir(parents=True, exist_ok=True)
             
             # Generate certificate
@@ -382,7 +382,7 @@ class CaddyCAManager:
     """Manage Caddy internal CA certificates"""
     
     def __init__(self, caddy_data_dir: Path = None, admin_url: str = "http://localhost:2019"):
-        self.caddy_data_dir = caddy_data_dir or (Path.home() / ".curtis" / "caddy")
+        self.caddy_data_dir = caddy_data_dir or (Path.home() / ".port-authority" / "caddy")
         self.admin_url = admin_url
         self.ca_dir = self.caddy_data_dir / "pki" / "authorities" / "local"
     
@@ -550,7 +550,7 @@ class TLSManager:
         self.prefer_mkcert = prefer_mkcert
         self.mkcert = MkcertManager()
         self.caddy_ca = CaddyCAManager()
-        self.cert_dir = Path.home() / ".curtis" / "certificates"
+        self.cert_dir = Path.home() / ".port-authority" / "certificates"
         self.cert_dir.mkdir(parents=True, exist_ok=True)
     
     def setup(self) -> Dict[str, Any]:

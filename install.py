@@ -93,7 +93,7 @@ def setup_directories():
     print("📁 Setting up directories...")
     
     # Context directory
-    contexts_dir = Path.home() / ".curtis" / "port-authority" / "contexts"
+    contexts_dir = Path.home() / ".port-authority" / "contexts"
     contexts_dir.mkdir(parents=True, exist_ok=True)
     
     # Data directory
@@ -101,7 +101,7 @@ def setup_directories():
     data_dir.mkdir(exist_ok=True)
     
     # CA directory for TLS
-    ca_dir = Path.home() / ".curtis" / "ca"
+    ca_dir = Path.home() / ".port-authority" / "ca"
     ca_dir.mkdir(parents=True, exist_ok=True)
     
     print("✅ Directories created!")

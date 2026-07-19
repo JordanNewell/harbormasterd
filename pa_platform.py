@@ -45,7 +45,7 @@ except ImportError:
     from tls_manager import TLSManager
 
 # Enhanced configuration with contexts
-CONTEXTS_DIR = Path.home() / ".curtis" / "port-authority" / "contexts"
+CONTEXTS_DIR = Path.home() / ".port-authority" / "contexts"
 CONTEXTS_DIR.mkdir(parents=True, exist_ok=True)
 DEFAULT_CONTEXT = "local"
 
@@ -117,7 +117,7 @@ class ContextManager:
             },
             "tls": {
                 "enabled": False,
-                "ca_path": str(Path.home() / ".curtis" / "ca")
+                "ca_path": str(Path.home() / ".port-authority" / "ca")
             }
         }
         

@@ -32,7 +32,7 @@ class CaddyDriver:
         self.caddy_bin = self.config.get("caddy_bin", "caddy")
         self.admin_url = self.config.get("admin_url", "http://localhost:2019")
         self.domain = self.config.get("domain", "pa.local")
-        self.data_dir = Path(self.config.get("data_dir", Path.home() / ".curtis" / "caddy"))
+        self.data_dir = Path(self.config.get("data_dir", Path.home() / ".port-authority" / "caddy"))
         self.config_file = self.data_dir / "Caddyfile"
         self.process = None
         
@@ -271,7 +271,7 @@ class CaddyDriver:
                         
                 else:
                     # Unix systems - save CA and provide instructions
-                    ca_file = Path.home() / ".curtis" / "caddy-ca.crt"
+                    ca_file = Path.home() / ".port-authority" / "caddy-ca.crt"
                     ca_file.write_text(ca_cert_pem)
                     
                     logger.info(f"CA certificate saved to: {ca_file}")
