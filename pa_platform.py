@@ -25,7 +25,6 @@ import yaml
 import subprocess
 import threading
 import sqlite3
-import keyring
 import webbrowser
 from typing import Dict, List, Optional, Any
 from pathlib import Path
