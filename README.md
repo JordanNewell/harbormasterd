@@ -35,7 +35,7 @@ Port Authority transforms local development by providing intelligent port manage
 pip install -r requirements.txt
 
 # 2. Start the daemon
-python port_authority_daemon.py &
+pad &
 
 # 3. Validate your setup
 pa selftest
@@ -48,6 +48,18 @@ pa dns install  # Configure DNS resolver
 pa run --name=myapp --prefer=3000 python app.py
 # → Available at https://myapp.pa.local (automatic HTTPS!)
 ```
+
+## 🖥️ Two CLIs
+
+Port Authority ships three entry points:
+
+| Command | Module | Purpose |
+|---|---|---|
+| `pa` | `pa.py` | Developer CLI — `pa run`, `pa reserve`, `pa release`, `pa who`, `pa scan`, `pa doctor`, `pa events` |
+| `pa-platform` | `pa_platform.py` | Platform CLI — `pa-platform context`, `pa-platform dns`, `pa-platform tls`, `pa-platform routes`, `pa-platform top`, `pa-platform selftest` |
+| `pad` | `pad.py` | Daemon — long-running background service |
+
+Most users only need `pa`. Use `pa-platform` for HTTPS/DNS setup and team-shared contexts.
 
 ## 📋 Platform Commands
 
@@ -88,7 +100,7 @@ pa selftest --comprehensive        # Full integration test
 
 ```bash
 export PAD_URL="http://127.0.0.1:9999"              # Daemon URL
-export PAD_ADMIN_TOKEN="REPLACED_BY_TOKEN_STORE"   # Admin API key
+export PAD_ADMIN_TOKEN="$(pa print-token)"   # Admin API key (auto-generated)
 ```
 
 ### Project Configuration (`.pa.yaml`)
@@ -104,7 +116,7 @@ gateway:
   auto_tls: true
 ```
 
-### Policy Configuration (`core/port-authority/data/policy.yaml`)
+### Policy Configuration (`data/policy.yaml`)
 
 ```yaml
 block_patterns: ["^.*(3000|3001|80|443)$"]
@@ -205,7 +217,7 @@ pa who <port>
 pa who 9999
 
 # Start with debug logging
-python core/port-authority/pad.py --log-level debug
+pad --log-level debug
 ```
 
 ### Permissions Issues (Windows)
@@ -219,11 +231,9 @@ netsh http add urlacl url=http://+:80/ user=Everyone
 ### CLI Not Found
 
 ```bash
-# Make sure Python path is correct
-python core/port-authority/pa.py --help
-
-# Create alias for convenience
-alias pa="python $(pwd)/core/port-authority/pa.py"
+# pa, pa-platform, and pad are console scripts — ensure your pip install
+# location (e.g. ~/.local/bin on Linux, %APPDATA%\Python\Scripts on Windows)
+# is on your PATH. Re-run: pip install -e .
 ```
 
 ### Framework Not Detected
@@ -293,8 +303,8 @@ pip install -r requirements.txt
 # Run comprehensive tests
 python -m pytest test_integration.py -v
 
-# Start development daemon
-python port_authority_daemon.py --admin-token=dev-token
+# Start development daemon (auto-generates a token; retrieve with `pa print-token`)
+pad
 
 # Test specific features
 pa dns status
@@ -314,7 +324,7 @@ pa selftest --comprehensive
 
 - [`TESTING.md`](TESTING.md) - Complete testing guide and CI/CD setup
 - [`DEVELOPMENT_HISTORY.md`](DEVELOPMENT_HISTORY.md) - Full implementation timeline  
-- [GitHub Actions](`.github/workflows/test-platform.yml`) - CI pipeline configuration
+- [GitHub Actions](`.github/workflows/ci.yml`) - CI pipeline configuration
 
 ## 🛡️ Security
 
