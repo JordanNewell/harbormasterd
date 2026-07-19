@@ -32,7 +32,7 @@ def test_connection():
             
     except requests.exceptions.ConnectionError:
         print("❌ PORT AUTHORITY daemon is NOT running")
-        print("   Start it with: python pad_pro.py")
+        print("   Start it with: python pad.py")
         return False
     except Exception as e:
         print(f"❌ Error: {e}")

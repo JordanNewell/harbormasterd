@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🚢 Curtis AI Port Authority Platform CLI
+🚢 Port Authority CLI
 Transform from tool → platform with contexts, routing, DNS/TLS, policy, and observability
 
 Platform Commands:
@@ -330,7 +330,7 @@ tls_mgr = TLSManagerWrapper()
 @click.option('--context', help='Use specific context')
 @click.pass_context
 def cli(ctx, context):
-    """🚢 Curtis AI Port Authority Platform - Zero-thinking port management"""
+    """🚢 Port Authority - Zero-thinking port management"""
     ctx.ensure_object(dict)
     
     if context:
@@ -343,7 +343,7 @@ def cli(ctx, context):
         
     # Show context in header
     if ctx.info_name == 'cli':  # Only on main command
-        click.echo(f"🚢 Curtis AI Port Authority Platform")
+        click.echo(f"🚢 Port Authority")
         click.echo(f"📍 Context: {ctx.obj['context']}")
 
 @cli.group()
@@ -549,7 +549,7 @@ def top(ctx):
             click.clear()
             
             # Header
-            click.echo(f"🚢 Curtis AI Port Authority - Context: {ctx.obj['context']}")
+            click.echo(f"🚢 Port Authority - Context: {ctx.obj['context']}")
             click.echo(f"⏰ {datetime.now().strftime('%H:%M:%S')}")
             click.echo("=" * 60)
             
@@ -670,7 +670,7 @@ def selftest(ctx, comprehensive, json_output):
             sys.exit(1)
     
     # Standard self-test (enhanced)
-    click.echo("🧪 Curtis AI Port Authority Self-Test")
+    click.echo("🧪 Port Authority Self-Test")
     click.echo("=" * 50)
     
     tests_passed = 0

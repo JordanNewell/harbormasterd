@@ -1,6 +1,6 @@
-# 🧪 Curtis AI Port Authority Testing Guide
+# 🧪 Port Authority Testing Guide
 
-This document describes the testing strategy and CI/CD pipeline for the Curtis AI Port Authority platform.
+This document describes the testing strategy and CI/CD pipeline for the Port Authority platform.
 
 ## Overview
 
@@ -266,7 +266,7 @@ Download test artifacts from failed runs:
 - ⚠️ Basic validation  
 - ❌ Not covered
 
-The comprehensive testing ensures Curtis AI Port Authority works reliably across all supported platforms and provides a smooth zero-config developer experience.
+The comprehensive testing ensures Port Authority works reliably across all supported platforms and provides a smooth zero-config developer experience.
 
 ---
 

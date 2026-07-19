@@ -1,4 +1,4 @@
-# Curtis AI Port Authority Platform Dependencies
+# Port Authority Dependencies
 
 # Core web framework and API
 fastapi>=0.104.0

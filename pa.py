@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🚢 Curtis AI Port Authority CLI (pa)
+🚢 Port Authority CLI (pa)
 Zero-thinking port management for development teams
 
 Commands:
@@ -287,7 +287,7 @@ def format_port_status(port_data: Dict[str, Any]) -> str:
 @click.option('--url', default=PAD_URL, help='Port Authority daemon URL')
 @click.pass_context
 def cli(ctx, url):
-    """🚢 Curtis AI Port Authority - Zero-thinking port management"""
+    """🚢 Port Authority - Zero-thinking port management"""
     ctx.ensure_object(dict)
     ctx.obj['client'] = PAClient(url)
 
@@ -595,7 +595,7 @@ def health(ctx):
     try:
         result = client.health()
         
-        click.echo(f"🚢 Curtis AI Port Authority Pro v{result.get('version', '?')}")
+        click.echo(f"🚢 Port Authority v{result.get('version', '?')}")
         click.echo(f"Status: {result['status'].upper()}")
         
         uptime_sec = result.get('uptime', 0)
@@ -665,7 +665,7 @@ def events(ctx):
 @click.pass_context
 def doctor(ctx):
     """Diagnose project ports and suggest .pa.yaml config"""
-    click.echo("🩺 Curtis AI Port Authority Doctor")
+    click.echo("🩺 Port Authority Doctor")
     click.echo("─" * 50)
     
     # Detect framework

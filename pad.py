@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🚢 Curtis AI Port Authority Pro - Zero-config local development ports
+🚢 Port Authority - Zero-config local development ports
 The unfair advantage for development teams
 
 New Features:
@@ -43,7 +43,7 @@ logging.basicConfig(
 logger = logging.getLogger("PAD")
 
 app = FastAPI(
-    title="Curtis AI Port Authority Pro",
+    title="Port Authority",
     description="Zero-config local development port management",
     version="1.0.0"
 )
@@ -798,7 +798,7 @@ async def startup():
     task_thread = threading.Thread(target=background_tasks, daemon=True)
     task_thread.start()
     
-    logger.info(f"🚢 Curtis AI Port Authority Pro started")
+    logger.info(f"🚢 Port Authority started")
     logger.info(f"📊 Ephemeral range: {EPHEMERAL_START}-{EPHEMERAL_END}")
     logger.info(f"🌐 Gateway domain: {policy.policy.get('gateway', {}).get('domain', 'pa.local')}")
     

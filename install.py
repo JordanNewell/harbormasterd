@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🚀 Curtis AI Port Authority Platform - Quick Setup
+🚀 Port Authority - Quick Setup
 Install dependencies, create aliases, and get started in 60 seconds
 """
 
@@ -50,7 +50,7 @@ def create_aliases():
     
     # Get the current path to port authority files
     pa_dir = Path(__file__).parent
-    pad_script = pa_dir / "pad_pro.py"
+    pad_script = pa_dir / "pad.py"
     pa_script = pa_dir / "pa_platform.py"
     
     # Windows PowerShell profile
@@ -60,7 +60,7 @@ def create_aliases():
         ps_profile = ps_profile_dir / "Microsoft.PowerShell_profile.ps1"
         
         aliases = f"""
-# Curtis AI Port Authority aliases
+# Port Authority aliases
 function pad {{ python "{pad_script}" $args }}
 function pa {{ python "{pa_script}" $args }}
 """
@@ -78,7 +78,7 @@ function pa {{ python "{pa_script}" $args }}
             shell_rc = Path.home() / ".zshrc"
         
         aliases = f"""
-# Curtis AI Port Authority aliases
+# Port Authority aliases
 alias pad='python {pad_script}'
 alias pa='python {pa_script}'
 """
@@ -128,7 +128,7 @@ def run_selftest():
         
         # Test CLI responsiveness
         result = run_command(f'{sys.executable} "{pa_script}" --help', check=False)
-        if result and "Curtis AI Port Authority Platform" in result:
+        if result and "Port Authority" in result:
             print("✅ CLI is working!")
             return True
         else:
@@ -141,7 +141,7 @@ def run_selftest():
 
 def show_next_steps():
     """Show what to do next"""
-    print("\n🎉 Curtis AI Port Authority Platform is ready!")
+    print("\n🎉 Port Authority is ready!")
     print("=" * 50)
     
     print("\n🚀 Quick Start:")
@@ -173,7 +173,7 @@ def show_next_steps():
 
 def main():
     """Main installation flow"""
-    print("🚢 Curtis AI Port Authority Platform - Quick Setup")
+    print("🚢 Port Authority - Quick Setup")
     print("=" * 60)
     
     steps = [

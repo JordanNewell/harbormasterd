@@ -6,7 +6,7 @@ set -e
 
 INSTALL_DIR="$HOME/.port-authority"
 VENV_DIR="$INSTALL_DIR/venv"
-REPO_URL="https://github.com/curtis-ai/port-authority"
+REPO_URL="https://github.com/JordanNewell/port-authority"
 
 echo "🚢 Installing Port Authority..."
 echo ""
@@ -68,6 +68,6 @@ echo "✅ Port Authority installed!"
 echo ""
 echo "→ Start using: pa run --name=myapp -- <your-command>"
 echo "→ Get help: pa --help"
-echo "→ Docs: https://github.com/curtis-ai/port-authority"
+echo "→ Docs: https://github.com/JordanNewell/port-authority"
 echo ""
 echo "🎉 Welcome aboard!"

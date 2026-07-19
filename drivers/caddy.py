@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🌐 Caddy Gateway Driver for Curtis AI Port Authority
+🌐 Caddy Gateway Driver for Port Authority
 Zero-config HTTPS and DNS integration with automatic TLS certificates
 
 Features:
@@ -110,7 +110,7 @@ class CaddyDriver:
         
         # Main Caddyfile - minimal and stable
         lines = [
-            "# Curtis AI Port Authority - Caddy Configuration",
+            "# Port Authority - Caddy Configuration",
             "# Auto-generated - do not edit manually",
             "",
             "{",
@@ -128,7 +128,7 @@ class CaddyDriver:
             "",
             "# Catch-all for unconfigured services",
             f"*.{self.domain} {{",
-            "    respond `<h1>Curtis AI Port Authority</h1><p>No service configured for <strong>{http.request.host}</strong></p><p>Configure with: <code>pa routes add {http.request.host} http://127.0.0.1:PORT</code></p>` 404",
+            "    respond `<h1>Port Authority</h1><p>No service configured for <strong>{http.request.host}</strong></p><p>Configure with: <code>pa routes add {http.request.host} http://127.0.0.1:PORT</code></p>` 404",
             "    tls internal",
             "}",
         ]

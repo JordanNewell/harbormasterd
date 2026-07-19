@@ -1,8 +1,8 @@
-# 🚢 Curtis AI Port Authority Platform - Complete System
+# 🚢 Port Authority - Complete System
 
 **From Tool → Platform: The Evolution Complete**
 
-We've successfully transformed the Port Authority from a simple port management tool into a comprehensive development platform that delivers an unfair advantage to Curtis AI teams.
+We've successfully transformed the Port Authority from a simple port management tool into a comprehensive development platform that delivers an unfair advantage to development teams.
 
 ## 🎯 Problem Solved
 
@@ -16,10 +16,10 @@ We've successfully transformed the Port Authority from a simple port management 
 
 | Component | File | Purpose |
 |-----------|------|---------|
-| **Port Authority Daemon Pro** | `pad_pro.py` | FastAPI service with SQLite registry, socket guards, real-time events |
+| **Port Authority Daemon** | `pad.py` | FastAPI service with SQLite registry, socket guards, real-time events |
 | **Platform CLI** | `pa_platform.py` | Enhanced CLI with contexts, routes, DNS/TLS, policy management |
 | **Original CLI** | `pa.py` | Simple CLI for basic operations |
-| **Curtis Integration** | `../system-controller.js` | Seamless integration with Curtis AI ecosystem |
+| **External Integration** | `../system-controller.js` | Seamless integration with the wider ecosystem |
 | **Quick Setup** | `install.py` | 60-second installation and configuration |
 
 ### Key Platform Pillars Implemented
@@ -213,20 +213,20 @@ pa share web                    # Team collaboration (ready)
 
 ## 🎉 Summary
 
-**Curtis AI now has a world-class development port management platform** that:
+**Jordan Newell now has a world-class development port management platform** that:
 
 - ✅ **Eliminates port conflicts forever**
 - ✅ **Provides beautiful *.pa.local URLs**  
 - ✅ **Supports team collaboration**
 - ✅ **Offers enterprise-grade observability**
 - ✅ **Scales from single dev to large teams**
-- ✅ **Integrates seamlessly with Curtis ecosystem**
+- ✅ **Integrates seamlessly with the wider ecosystem**
 
 The system is **production-ready** and **demo-ready**. The architecture supports all planned enhancements while maintaining the simple, zero-thinking developer experience.
 
 ---
 
-**🚢 Curtis AI Port Authority Platform**  
+**🚢 Port Authority**  
 *Making port conflicts a thing of the past.*
 
 **Ready to ship!** 🚀

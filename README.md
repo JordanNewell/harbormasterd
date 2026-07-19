@@ -1,8 +1,8 @@
-# 🚢 Curtis AI Port Authority Platform
+# 🚢 Port Authority
 
 > **Zero-thinking port management with automatic HTTPS and DNS for local development**
 
-Curtis AI Port Authority transforms local development by providing intelligent port management, automatic HTTPS certificates, and seamless DNS resolution. No more port conflicts, manual certificate setup, or remembering localhost URLs.
+Port Authority transforms local development by providing intelligent port management, automatic HTTPS certificates, and seamless DNS resolution. No more port conflicts, manual certificate setup, or remembering localhost URLs.
 
 ## ✨ Key Features
 
@@ -88,7 +88,7 @@ pa selftest --comprehensive        # Full integration test
 
 ```bash
 export PAD_URL="http://127.0.0.1:9999"              # Daemon URL
-export PAD_ADMIN_TOKEN="curtis-port-authority-pro"   # Admin API key
+export PAD_ADMIN_TOKEN="REPLACED_BY_TOKEN_STORE"   # Admin API key
 ```
 
 ### Project Configuration (`.pa.yaml`)
@@ -205,7 +205,7 @@ pa who <port>
 pa who 9999
 
 # Start with debug logging
-python core/port-authority/pad_pro.py --log-level debug
+python core/port-authority/pad.py --log-level debug
 ```
 
 ### Permissions Issues (Windows)
@@ -352,8 +352,8 @@ pa selftest --comprehensive
 
 ## 🤝 Support
 
-- **Issues**: [GitHub Issues](https://github.com/curtis-ai/port-authority/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/curtis-ai/port-authority/discussions)  
+- **Issues**: [GitHub Issues](https://github.com/JordanNewell/port-authority/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/JordanNewell/port-authority/discussions)  
 - **Documentation**: Complete guides and API reference
 - **Community**: Discord server for real-time support
 
@@ -372,10 +372,10 @@ Ready to eliminate port management friction from your development workflow?
 pa selftest --comprehensive && echo "🚢 Welcome aboard the Port Authority platform!"
 ```
 
-**Curtis AI Port Authority**: Because developers should focus on building, not managing infrastructure.
+**Port Authority**: Because developers should focus on building, not managing infrastructure.
 
 ---
 
-*Developed with ❤️ by the Curtis AI team*  
+*Developed with ❤️ by the Port Authority maintainers*  
 *Platform tested on Windows 11, macOS Ventura, Ubuntu 22.04*  
 *Comprehensive CI/CD pipeline validates every commit across 9 platform combinations*

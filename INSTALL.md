@@ -16,7 +16,7 @@ pip install port-authority
 
 ```bash
 # Clone the repo
-git clone https://github.com/curtis-ai/port-authority.git
+git clone https://github.com/JordanNewell/port-authority.git
 cd port-authority
 
 # Install dependencies
@@ -30,7 +30,7 @@ python pa.py selftest
 
 ```bash
 # Start the daemon
-python pad_pro.py &
+python pad.py &
 
 # Reserve your first port
 python pa.py run --name=myapp -- python -m http.server

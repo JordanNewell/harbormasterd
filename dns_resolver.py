@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🌐 Curtis AI Port Authority DNS Resolver
+🌐 Port Authority DNS Resolver
 Zero-config local DNS for *.pa.local domains
 
 Features:
@@ -517,7 +517,7 @@ DNS={self.resolver_ip}:{self.resolver_port}
                 hosts_content = ""
             
             # Add our entries if not present
-            marker = f"# Curtis AI Port Authority - {self.domain}"
+            marker = f"# Port Authority - {self.domain}"
             if marker not in hosts_content:
                 new_entries = f"\n{marker}\n127.0.0.1 *.{self.domain}\n::1 *.{self.domain}\n"
                 
@@ -667,7 +667,7 @@ if __name__ == "__main__":
     # Test/demo mode
     installer = CrossPlatformDNSInstaller()
     
-    print("🌐 Curtis AI Port Authority DNS Resolver")
+    print("🌐 Port Authority DNS Resolver")
     print("=" * 50)
     
     if len(sys.argv) > 1 and sys.argv[1] == "install":

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🔐 Curtis AI Port Authority TLS Manager
+🔐 Port Authority TLS Manager
 Zero-config HTTPS with mkcert integration and fallback to Caddy internal CA
 
 Features:
@@ -684,7 +684,7 @@ class TLSManager:
             # Certificate details
             subject = issuer = x509.Name([
                 x509.NameAttribute(NameOID.COMMON_NAME, f"*.{self.domain}"),
-                x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Curtis AI Port Authority"),
+                x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Port Authority"),
                 x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, "Development")
             ])
             
@@ -837,7 +837,7 @@ if __name__ == "__main__":
     # Test/demo mode
     tls_mgr = TLSManager()
     
-    print("🔐 Curtis AI Port Authority TLS Manager")
+    print("🔐 Port Authority TLS Manager")
     print("=" * 50)
     
     if len(sys.argv) > 1 and sys.argv[1] == "setup":

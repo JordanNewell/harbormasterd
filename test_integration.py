@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🧪 Curtis AI Port Authority Integration Test Suite
+🧪 Port Authority Integration Test Suite
 Comprehensive cross-platform testing for the complete platform
 
 Test Coverage:
@@ -78,7 +78,7 @@ class TestHarness:
         
     def run_all_tests(self) -> Dict[str, Any]:
         """Run complete test suite"""
-        print("🧪 Curtis AI Port Authority Integration Tests")
+        print("🧪 Port Authority Integration Tests")
         print("=" * 60)
         print(f"Platform: {self.platform} ({platform.release()})")
         print(f"Python: {sys.version.split()[0]}")
@@ -168,7 +168,7 @@ class TestHarness:
         try:
             # Look for daemon executable
             daemon_paths = [
-                Path(__file__).parent / "pad_pro.py",
+                Path(__file__).parent / "pad.py",
                 Path(__file__).parent / "daemon" / "main.py",
                 "pa daemon start"  # If installed globally
             ]
@@ -1018,7 +1018,7 @@ def main():
     """Main test runner"""
     import argparse
     
-    parser = argparse.ArgumentParser(description='Curtis PA Integration Tests')
+    parser = argparse.ArgumentParser(description='Port Authority Integration Tests')
     parser.add_argument('--daemon-url', default=TEST_CONFIG['daemon_url'], 
                        help='Daemon URL')
     parser.add_argument('--admin-token', default=TEST_CONFIG['admin_token'],
