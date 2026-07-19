@@ -40,7 +40,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
-logger = logging.getLogger("PAD_PRO")
+logger = logging.getLogger("PAD")
 
 app = FastAPI(
     title="Curtis AI Port Authority Pro",
@@ -53,7 +53,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 POLICY_FILE = os.path.join(DATA_DIR, "policy.yaml")
 AUDIT_LOG = os.path.join(DATA_DIR, "audit.jsonl")
-DB_PATH = os.path.join(DATA_DIR, "pad_pro.db")
+DB_PATH = os.path.join(DATA_DIR, "pad.db")
 
 os.makedirs(DATA_DIR, exist_ok=True)
 
@@ -804,6 +804,18 @@ async def startup():
     
     await emit_event("system.started", version="1.0.0")
 
-if __name__ == "__main__":
+def main():
+    """Entry point for the `pad` console script."""
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=9999, log_level="info")
+    config = {
+        "host": os.environ.get("PAD_HOST", "127.0.0.1"),
+        "port": int(os.environ.get("PAD_PORT", "9999")),
+        "log_level": os.environ.get("PAD_LOG_LEVEL", "info"),
+    }
+    if os.environ.get("PAD_RELOAD"):
+        config["reload"] = True
+    uvicorn.run(app, **config)
+
+
+if __name__ == "__main__":
+    main()
