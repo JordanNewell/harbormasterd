@@ -938,5 +938,9 @@ def run(ctx, name, prefer, ttl, env, command):
         click.echo(f"❌ Failed to spawn process: {e}")
         sys.exit(1)
 
-if __name__ == '__main__':
+def main():
     cli()
+
+
+if __name__ == '__main__':
+    main()

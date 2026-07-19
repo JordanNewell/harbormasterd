@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "port-authority"
-version = "1.0.0"
+version = "1.0.1"
 description = "Zero-conflict port management with automatic HTTPS and DNS for local development"
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
-    {name = "Curtis AI", email = "hello@portauthority.dev"}
+    {name = "Jordan Newell", email = "jordan@example.com"}
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -46,20 +46,21 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/curtis-ai/port-authority"
-Documentation = "https://github.com/curtis-ai/port-authority#readme"
-Repository = "https://github.com/curtis-ai/port-authority"
-Issues = "https://github.com/curtis-ai/port-authority/issues"
+Homepage = "https://github.com/JordanNewell/port-authority"
+Documentation = "https://github.com/JordanNewell/port-authority#readme"
+Repository = "https://github.com/JordanNewell/port-authority"
+Issues = "https://github.com/JordanNewell/port-authority/issues"
 
 [project.scripts]
-pa = "pa_platform:main"
-pad = "pad_pro:main"
+pa = "pa:main"
+pa-platform = "pa_platform:main"
+pad = "pad:main"
 
 [tool.setuptools]
-packages = ["port_authority"]
+py-modules = ["pa", "pa_platform", "pad", "token_store", "dns_resolver", "tls_manager"]
 
 [tool.setuptools.package-data]
-port_authority = ["data/*.yaml", "drivers/*"]
+"*" = ["data/policy.yaml", "drivers/caddy.py"]
 
 [tool.black]
 line-length = 100

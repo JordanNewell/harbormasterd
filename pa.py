@@ -725,5 +725,9 @@ def doctor(ctx):
     except:
         click.echo("\n❌ Could not check for conflicts (daemon not running?)")
 
-if __name__ == '__main__':
+def main():
     cli()
+
+
+if __name__ == '__main__':
+    main()
