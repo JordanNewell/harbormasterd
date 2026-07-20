@@ -10,10 +10,13 @@ dist/
 data/*.db
 data/*.db-journal
 data/*.jsonl
+data/routes.json
+data/traefik_routes.yaml
 
 # Local-only files
 mailmap.txt
 .env
+.zcode/
 
 # Internal / pre-rewrite backups
 .git.backup-pre-rewrite/

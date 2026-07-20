@@ -30,8 +30,6 @@ import os
 import sys
 import time
 import yaml
-import subprocess
-import threading
 from typing import Dict, List, Optional, Any
 from pathlib import Path
 from datetime import datetime
@@ -101,32 +99,50 @@ class PAClient:
         self.admin_token = admin_token
         
     def _request(self, method: str, path: str, admin: bool = False, **kwargs) -> Dict[str, Any]:
-        """Make HTTP request to Harbormasterd daemon"""
+        """Make HTTP request to Harbormasterd daemon.
+
+        `admin` is kept as a conceptual marker but the X-API-Key header is
+        sent unconditionally — every daemon endpoint requires it.
+        """
         url = f"{self.base_url}{path}"
         headers = kwargs.pop('headers', {})
-        
-        if admin:
+
+        # Every endpoint requires the admin token since v1.0.1.
+        if self.admin_token:
             headers['X-API-Key'] = self.admin_token
-        
+
         try:
             response = requests.request(method, url, headers=headers, timeout=30, **kwargs)
-            
-            if response.status_code == 404:
-                click.echo(f"❌ Harbormasterd daemon not running at {self.base_url}")
-                click.echo(f"   Start it with: pad")
+
+            if response.status_code in (401, 403):
+                try:
+                    detail = response.json().get('detail', 'Forbidden')
+                except Exception:
+                    detail = response.text or f"HTTP {response.status_code}"
+                click.echo(f"❌ Authentication failed: {detail}")
+                click.echo(f"   Set PAD_ADMIN_TOKEN or run `pa print-token` to see the daemon's token.")
                 sys.exit(1)
-            
+
+            if response.status_code == 404:
+                try:
+                    detail = response.json().get('detail', 'Not found')
+                except Exception:
+                    detail = response.text
+                click.echo(f"❌ Endpoint not found: {method} {path}")
+                if detail:
+                    click.echo(f"   {detail}")
+                sys.exit(1)
+
             if not response.ok:
                 try:
                     error = response.json().get('detail', 'Unknown error')
-                except:
+                except Exception:
                     error = response.text or f"HTTP {response.status_code}"
-                
                 click.echo(f"❌ API Error: {error}")
                 sys.exit(1)
-            
+
             return response.json()
-            
+
         except requests.exceptions.ConnectionError:
             click.echo(f"❌ Could not connect to Harbormasterd daemon at {self.base_url}")
             click.echo(f"   Start it with: pad")
@@ -217,6 +233,13 @@ class PAClient:
     def health(self) -> Dict[str, Any]:
         """Get daemon health status"""
         return self._request("GET", "/health")
+
+    def add_route(self, host: str, target: str, protocols: Optional[List[str]] = None) -> Dict[str, Any]:
+        """Add a gateway route."""
+        data: Dict[str, Any] = {"host": host, "target": target}
+        if protocols:
+            data["protocols"] = protocols
+        return self._request("POST", "/routes", json=data)
 
 def load_project_config() -> Dict[str, Any]:
     """Load .pa.yaml configuration from current directory"""
@@ -399,6 +422,21 @@ def run(ctx, name, prefer, ttl, host, env, command):
                 click.echo(f"💡 PORT environment variable injected automatically")
             elif framework.get('port_flag'):
                 click.echo(f"💡 Consider adding {framework['port_flag']} {port} to your command")
+
+        # Sync any routes declared in .pa.yaml to the daemon's gateway.
+        routes_decl = config.get("routes") or []
+        if routes_decl:
+            target = f"http://127.0.0.1:{port}"
+            for entry in routes_decl:
+                rhost = entry.get("host") if isinstance(entry, dict) else None
+                if not rhost:
+                    continue
+                try:
+                    client.add_route(rhost, target, entry.get("protocols", ["http"]))
+                    click.echo(f"🌐 Route added: {rhost} → {target}")
+                except SystemExit:
+                    # 409 (already exists) or other error — _request printed it.
+                    pass
         
     except SystemExit:
         pass

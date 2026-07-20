@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python: ['3.9', '3.10', '3.11', '3.12']
+        python: ['3.10', '3.11', '3.12', '3.13']
 
     steps:
       - uses: actions/checkout@v4
@@ -37,8 +37,8 @@ jobs:
           pad --help
           pa-platform --help
 
-      - name: Run token_store unit tests
-        run: python -m pytest test_token_store.py -v
+      - name: Run unit + endpoint tests
+        run: python -m pytest test_token_store.py test_pad_endpoints.py -v
 
       - name: Build wheel
         run: python -m build

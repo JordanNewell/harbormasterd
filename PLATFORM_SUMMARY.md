@@ -1,231 +1,182 @@
-# 🚢 Harbormasterd - Complete System
+# 🚢 Harbormasterd — Platform Summary
 
-**From Tool → Platform: The Evolution Complete**
+A local-development port-management platform: intelligent port allocation,
+automatic conflict resolution, `*.pa.local` gateway URLs, and local DNS/TLS.
 
-We've successfully transformed the Harbormasterd from a simple port management tool into a comprehensive development platform that delivers an unfair advantage to development teams.
+This document describes what the platform **actually does today**. Aspirational
+items live in the README roadmap.
 
 ## 🎯 Problem Solved
 
-**Original Issue:** "Everything gets put on Server 3000" - constant port conflicts destroying developer productivity.
+**Original issue:** "Everything gets put on port 3000" — constant port
+conflicts destroying developer productivity.
 
-**Solution Delivered:** Zero-config port management platform with intelligent conflict resolution, beautiful URLs, and team collaboration features.
+**Solution:** A daemon-backed registry that reserves ports atomically,
+guards them against races, auto-heals dead processes, and (optionally)
+projects friendly `*.pa.local` URLs through a gateway driver.
 
-## 🏗️ Platform Architecture
+## 🏗️ Architecture
 
-### Core Components
+### Core components
 
 | Component | File | Purpose |
 |-----------|------|---------|
-| **Harbormasterd Daemon** | `pad.py` | FastAPI service with SQLite registry, socket guards, real-time events |
-| **Platform CLI** | `pa_platform.py` | Enhanced CLI with contexts, routes, DNS/TLS, policy management |
-| **Original CLI** | `pa.py` | Simple CLI for basic operations |
-| **Quick Setup** | `install.py` | 60-second installation and configuration |
+| **Daemon** | `pad.py` | FastAPI service with SQLite registry, socket guards, SSE events, gateway drivers |
+| **Developer CLI** | `pa.py` | `pa run`, `reserve`, `release`, `bind`, `who`, `scan`, `block`, `unblock`, `kill`, `events`, `doctor`, `print-token` |
+| **Platform CLI** | `pa_platform.py` | Contexts, routes, DNS/TLS, policy, metrics, selftest |
+| **Gateway drivers** | `pad.py` (Traefik), `drivers/caddy.py` (Caddy) | Pluggable reverse-proxy integration |
+| **DNS resolver** | `dns_resolver.py` | Cross-platform `*.pa.local` installer |
+| **TLS manager** | `tls_manager.py` | mkcert / Caddy CA / self-signed certificate management |
+| **Token store** | `token_store.py` | Admin-token persistence (keyring → mode-0600 file → env) |
 
-### Key Platform Pillars Implemented
+### Platform pillars
 
-#### 1. 🌍 **Contexts & Namespaces**
+#### 1. 🌍 Contexts & namespaces
 ```bash
-pa context create team --daemon-url https://team.example.com
-pa context use team
-pa run --name web -- npm start  # Runs in team/web namespace
+pa-platform context create team --daemon-url https://ports.team.example.com
+pa-platform context use team
+pa-platform run --name web -- npm start   # runs in team/web namespace
 ```
-- Multi-environment support (local, team, codespace)
-- Logical namespaces for user/project/service isolation
-- Per-context configuration management
+- Per-context daemon URL, namespace, and token
+- Namespaced route names so multiple contexts can coexist
 
-#### 2. 🌐 **Routes & Gateway Control**  
+#### 2. 🌐 Routes & gateway control
 ```bash
-pa routes add web.pa.local http://127.0.0.1:3000 --protocols http,ws
-pa open web  # Opens http://web.pa.local in browser
-pa url api   # Prints URL for scripts
+pa-platform routes add web.pa.local http://127.0.0.1:3000 --protocols http,ws
+pa-platform routes list
+pa-platform routes rm web.pa.local
+pa-platform routes sync -f .pa.yaml   # POST routes declared in a project file
+pa-platform open web                   # opens the service URL in a browser
+pa-platform url  web                   # prints the URL for scripts
 ```
-- Gateway-agnostic route management
-- Beautiful *.pa.local domains instead of port numbers
-- Browser integration and scriptable URLs
+- Backed by `GET/POST/DELETE /routes` on the daemon
+- Gateway-driver selectable via policy (`gateway.driver: traefik|caddy`)
+- Routes persist across daemon restarts (`data/routes.json`)
 
-#### 3. 🔒 **DNS & TLS Management**
+#### 3. 🔒 DNS & TLS management
 ```bash
-pa dns install     # Local DNS resolver for *.pa.local
-pa tls trust       # Trust local CA for HTTPS
-pa tls issue web.pa.local  # Issue certificates
+pa-platform dns install     # local DNS resolver for *.pa.local
+pa-platform dns status
+pa-platform tls trust       # trust the local CA
+pa-platform tls issue web.pa.local
+pa-platform tls list
 ```
-- Zero-config local DNS resolution
-- Local CA and certificate management
-- Ready for HTTPS development
+- Cross-platform DNS install (hosts file / systemd-resolved / resolver files)
+- TLS provider fallback chain: mkcert → Caddy CA → self-signed
 
-#### 4. 📋 **Policy & Security**
+#### 4. 📋 Policy & audit
 ```bash
-pa policy show     # Current enforcement policies
-pa policy apply policy.yaml  # Apply new policies
-pa audit tail      # Tamper-evident action logs
+pa-platform policy show                 # current policy
+pa-platform policy apply policy.yaml    # merge a fragment
+pa-platform policy edit                 # $EDITOR on the policy, applied on save
 ```
-- Policy-driven port blocking and TTL limits
-- Audit trail with hash chain integrity
-- Admin authentication for destructive operations
+Policy fields actually consulted by the daemon:
 
-#### 5. 📊 **Observability & Monitoring**
+| Field | Effect |
+|---|---|
+| `block_patterns` | Ports matching these regexes are auto-blocked on startup |
+| `auto_heal` | Re-guard ports whose bound PID has died |
+| `max_ttl` | Clamp lease TTL in `/reserve` and `/spawn` |
+| `require_admin_for_kill` | If false, `/kill` does not require the admin token |
+| `audit_enabled` | Toggle the tamper-evident audit log |
+| `gateway.driver` | Select `traefik` or `caddy` |
+
+#### 5. 📊 Observability
 ```bash
-pa metrics         # Performance dashboard
-pa top             # Live TUI monitoring
-pa selftest        # End-to-end validation
+pa metrics            # gauges + counters
+pa top                # live TUI of managed + unmanaged ports
+pa selftest           # 8 quick checks (daemon, reserve/release, DNS, TLS, gateway, metrics, spawn, perf)
+pa selftest --comprehensive   # 13-category integration suite
 ```
-- Real-time metrics and performance tracking
-- Live monitoring with beautiful TUI
-- Comprehensive system health checks
+- `/metrics` returns nested `counters`/`gauges` plus flat aliases for legacy clients
+- `/scan` returns both canonical (`managed`/`unmanaged`) and legacy (`active_ports`/`conflicts`) shapes
 
-## ✨ Platform Features
+## ✨ Features
 
-### Zero Race Conditions
-- **Atomic spawn**: Reserve → Guard → Launch in one operation
-- **Socket guards**: Physically hold ports to prevent conflicts
-- **Auto-heal**: Dead processes get ports re-guarded automatically
+### Atomic, race-free allocation
+- **Atomic spawn**: reserve → guard → launch in one operation
+- **Socket guards**: the daemon physically holds ports to prevent races
+- **Auto-heal**: dead managed processes get their ports re-guarded
 
-### Intelligent Assignment  
-- **Framework detection**: Knows Next.js, Vite, Django, FastAPI defaults
-- **Smart reassignment**: Conflicts resolved without user intervention
-- **Policy enforcement**: Configurable port blocking and TTL limits
+### Intelligent assignment
+- Framework detection (Next.js, Vite, Django, FastAPI, Express, Vue CLI, CRA)
+- Smart reassignment: preferred ports fall back to the ephemeral range
+- Policy-driven blocking and TTL clamping
 
-### Developer Experience
-- **Live events**: Real-time port status via Server-Sent Events
-- **Beautiful URLs**: web.pa.local instead of localhost:3000
-- **Zero config**: Detects frameworks and auto-configures
+### Security model
+- **Every endpoint requires the admin token** (X-API-Key header) by default
+- Token persisted to the OS keyring with a mode-0600 file fallback
+- `/kill` can be opened to unauthenticated callers via policy (off by default)
+- SQL is parameterized throughout; no string interpolation in queries
+- Tamper-evident audit log (SHA-256 chain)
 
-### Team Collaboration
-- **Multi-context**: Switch between local, team, and cloud environments
-- **Namespace isolation**: Clean separation of services and users
-- **Remote sharing**: Ready for tunnel-based collaboration
+## 🚀 Installation & usage
 
-## 🎪 Demo Scenarios
-
-### Basic Conflict Resolution
+### Quick setup
 ```bash
-# Before Harbormasterd
-npm start  # ❌ Error: Port 3000 already in use
+pip install -e ".[dev]"   # or: pip install -r requirements.txt
+pad                       # start the daemon (auto-generates a token)
+pa print-token            # see the token (set PAD_ADMIN_TOKEN to use it)
+pa selftest               # validate
+```
 
-# After Harbormasterd  
+### Commands at a glance
+```bash
+# Developer CLI (pa)
 pa run --name web -- npm start
-# ✅ Spawned 'npm start' for web on port 60001
-# 🌐 URL: http://web.pa.local
-# 💡 PORT environment variable injected automatically
+pa reserve --name api --prefer 3000 3001
+pa release --name api
+pa who 3000
+pa scan
+pa block 5432 --reason "postgres reserved"
+pa kill 3000 --force
+pa events
+pa doctor
+
+# Platform CLI (pa-platform)
+pa-platform context list|use|create|delete
+pa-platform routes list|add|rm|sync
+pa-platform open <service>
+pa-platform url <service>
+pa-platform dns install|status|uninstall
+pa-platform tls trust|issue|list|status
+pa-platform policy show|apply|edit
+pa-platform metrics
+pa-platform top
+pa-platform selftest [--comprehensive]
 ```
 
-### Multi-Service Development
-```bash
-# Terminal 1: API server
-pa run --name api -- npm run dev
-# → http://api.pa.local
+## 📊 Status
 
-# Terminal 2: Frontend  
-pa run --name web -- npm start
-# → http://web.pa.local
+| Capability | Status |
+|---|---|
+| Port reservation, binding, release | ✅ shipped |
+| Process spawn + auto-heal | ✅ shipped |
+| Policy blocks + TTL clamping | ✅ shipped |
+| Gateway routes (Traefik + Caddy drivers) | ✅ shipped |
+| Policy hot-reload via `/policy` | ✅ shipped |
+| Local DNS resolver | ✅ shipped |
+| TLS management (mkcert/Caddy/self-signed) | ✅ shipped |
+| Token-authenticated API on every endpoint | ✅ shipped |
+| Audit log (hash chain) | ✅ shipped (written; no read endpoint yet) |
+| Team-shared daemon / tunneling | 🚧 not yet (roadmap) |
+| VS Code extension, Docker/K8s, RBAC, service mesh | 🚧 not yet (roadmap) |
 
-# Terminal 3: Database
-pa run --name db -- npx local-postgres-proxy
-# → http://db.pa.local
+## 🔮 Roadmap
 
-# All services running with zero conflicts!
-```
+Short term:
+- Audit-log read endpoint (`GET /audit`)
+- Gateway health probes (is the configured Traefik/Caddy actually up?)
+- `.pa.yaml` schema validation in `pa doctor`
 
-### Team Development
-```bash
-# Switch to team context
-pa context create team --daemon-url https://ports.team.dev
-pa context use team
+Longer term:
+- VS Code extension
+- Docker Compose / Kubernetes integration
+- Team tunnels (`pa share`) for secure sharing beyond the local machine
+- Multi-host coordination, RBAC, service-mesh integration
 
-# Deploy to team namespace
-pa run --name web -- npm start
-# → https://yourname-web.team.dev (auto-tunneled)
-```
-
-## 📊 Success Metrics Achieved
-
-| Metric | Target | Achieved |
-|--------|---------|----------|
-| **Port Conflicts** | Zero "port already in use" | ✅ 100% elimination |
-| **Startup Time** | Sub-2-second from command to URL | ✅ <2s average |  
-| **Conflict Resolution** | >95% automatic | ✅ 98%+ success rate |
-| **Developer Experience** | Beautiful URLs vs port numbers | ✅ *.pa.local domains |
-| **System Reliability** | >99% uptime, auto-healing | ✅ Built-in resilience |
-
-## 🚀 Installation & Usage
-
-### Quick Setup (60 seconds)
-```bash
-# Install and configure everything
-python core/harbormasterd/install.py
-
-# Start the daemon
-pad
-
-# Test the platform
-pa selftest
-pa run --name test -- python -m http.server
-pa open test
-```
-
-### Platform Commands
-```bash
-# Context management
-pa context list|use|create|delete
-
-# Route management  
-pa routes list|add|rm
-pa open <service>
-pa url <service>
-
-# DNS & TLS
-pa dns install|status
-pa tls trust|issue|list
-
-# Monitoring
-pa metrics
-pa top
-pa selftest
-
-# Enhanced operations
-pa run --name web -- npm start  # With namespace support
-pa share web                    # Team collaboration (ready)
-```
-
-## 🔮 Platform Roadmap
-
-### Phase 2: Advanced Features
-- **VS Code Extension**: Port status in status bar, one-click operations
-- **Container Integration**: Docker Compose and Kubernetes support
-- **Advanced Gateway**: Load balancing and traffic shaping
-- **Team Tunnels**: Secure sharing via `pa share <service>`
-
-### Phase 3: Enterprise Features  
-- **Multi-host Coordination**: Distributed port registry
-- **RBAC & Policies**: Role-based access control
-- **Service Mesh**: Istio/Linkerd integration
-- **Monitoring Integration**: Datadog, New Relic connectors
-
-## 💡 Why This Is An Unfair Advantage
-
-1. **Developer Velocity**: Zero time wasted on port conflicts
-2. **Beautiful URLs**: Human-friendly development experience  
-3. **Zero Config**: Works out of the box with all major frameworks
-4. **Team Ready**: Scales from individual → team → enterprise
-5. **Future Proof**: Extensible architecture for new protocols/tools
-6. **Production Ready**: Socket guards, audit trails, metrics, policies
-
-## 🎉 Summary
-
-**Harbormasterd is a world-class development port management platform** that:
-
-- ✅ **Eliminates port conflicts forever**
-- ✅ **Provides beautiful *.pa.local URLs**  
-- ✅ **Supports team collaboration**
-- ✅ **Offers enterprise-grade observability**
-- ✅ **Scales from single dev to large teams**
-- ✅ **Integrates seamlessly with the wider ecosystem**
-
-The system is **production-ready** and **demo-ready**. The architecture supports all planned enhancements while maintaining the simple, zero-thinking developer experience.
+See the README for the full roadmap and current disclaimers.
 
 ---
 
-**🚢 Harbormasterd**  
-*Making port conflicts a thing of the past.*
-
-**Ready to ship!** 🚀
+**🚢 Harbormasterd** — *Making port conflicts a thing of the past, on this machine.*

@@ -7,12 +7,13 @@ Platform Commands:
   pa context list|use|create|delete  # Multi-env/user contexts
   pa routes list|add|rm|sync         # Gateway control
   pa dns install|status              # Zero-config local DNS
-  pa tls trust|issue|list             # Local CA and certificates  
-  pa policy show|apply|edit           # Enforcement and RBAC
-  pa metrics                          # Observability dashboard
-  pa top                              # Live TUI monitoring
-  pa share <service>                  # Team collaboration
-  pa selftest                         # End-to-end validation
+  pa tls trust|issue|list            # Local CA and certificates
+  pa policy show|apply|edit          # Policy enforcement
+  pa metrics                         # Observability dashboard
+  pa top                             # Live TUI monitoring
+  pa selftest                        # End-to-end validation
+
+Invoked as `pa-platform <command>` (the project's second entry point).
 """
 
 import click
@@ -22,14 +23,10 @@ import os
 import sys
 import time
 import yaml
-import subprocess
-import threading
-import sqlite3
 import webbrowser
 from typing import Dict, List, Optional, Any
 from pathlib import Path
 from datetime import datetime
-import psutil
 from contextlib import contextmanager
 from token_store import get_token
 try:
@@ -139,39 +136,58 @@ class EnhancedPAClient:
         self.namespace = self.config.get("namespace", "default")
     
     def _request(self, method: str, path: str, admin: bool = False, **kwargs) -> Dict[str, Any]:
-        """Make HTTP request with enhanced error handling"""
+        """Make HTTP request with enhanced error handling.
+
+        `admin` is kept as a conceptual marker but the X-API-Key header is
+        sent unconditionally — every daemon endpoint requires it.
+        """
         url = f"{self.base_url}{path}"
         headers = kwargs.pop('headers', {})
         headers['Content-Type'] = 'application/json'
         headers['X-Namespace'] = self.namespace
-        
-        if admin:
+
+        # Every endpoint requires the admin token since v1.0.1.
+        if self.admin_token:
             headers['X-API-Key'] = self.admin_token
-        
+
         try:
             response = requests.request(method, url, headers=headers, timeout=30, **kwargs)
-            
-            if response.status_code == 404:
-                click.echo(f"❌ Harbormasterd daemon not running at {self.base_url}")
-                click.echo(f"   Start it with: pa daemon start")
+
+            if response.status_code in (401, 403):
+                try:
+                    detail = response.json().get('detail', 'Forbidden')
+                except Exception:
+                    detail = response.text or f"HTTP {response.status_code}"
+                click.echo(f"❌ Authentication failed: {detail}")
+                click.echo(f"   Set PAD_ADMIN_TOKEN or run `pa print-token` to see the daemon's token.")
                 sys.exit(1)
-            
+
+            if response.status_code == 404:
+                try:
+                    detail = response.json().get('detail', 'Not found')
+                except Exception:
+                    detail = response.text
+                click.echo(f"❌ Endpoint not found: {method} {path}")
+                if detail:
+                    click.echo(f"   {detail}")
+                click.echo(f"   (Not all endpoints are implemented yet; see README Status section.)")
+                sys.exit(1)
+
             if not response.ok:
                 try:
                     error = response.json().get('detail', 'Unknown error')
-                except:
+                except Exception:
                     error = response.text or f"HTTP {response.status_code}"
-                
                 click.echo(f"❌ API Error: {error}")
                 sys.exit(1)
-            
+
             return response.json()
-            
+
         except requests.exceptions.ConnectionError:
             click.echo(f"❌ Could not connect to Harbormasterd daemon")
             click.echo(f"   Context: {self.context}")
             click.echo(f"   URL: {self.base_url}")
-            click.echo(f"   Try: pa daemon start")
+            click.echo(f"   Try: pad")
             sys.exit(1)
         except requests.exceptions.Timeout:
             click.echo(f"❌ Request timed out")
@@ -188,11 +204,16 @@ class EnhancedPAClient:
         })
     
     def get_routes(self) -> List[Dict[str, Any]]:
-        """Get all routes for current namespace"""
-        try:
-            return self._request("GET", f"/routes?namespace={self.namespace}")
-        except:
-            return []
+        """Get all routes for current namespace.
+
+        Returns the ``routes`` list from the daemon. On error the request
+        layer exits with a message; this method just unwraps the payload.
+        """
+        payload = self._request("GET", f"/routes?namespace={self.namespace}")
+        # Endpoint returns {"routes": [...], "count": N}; preserve both shapes.
+        if isinstance(payload, dict) and "routes" in payload:
+            return payload["routes"]
+        return payload if isinstance(payload, list) else []
     
     def add_route(self, host: str, target: str, protocols: List[str] = None):
         """Add a route to the gateway"""
@@ -442,12 +463,153 @@ def add(ctx, host, target, protocols):
 def rm(ctx, host):
     """Remove a route"""
     client = ctx.obj['client']
-    
+
     try:
         client.remove_route(host)
         click.echo(f"✅ Removed route: {host}")
     except Exception as e:
         click.echo(f"❌ Failed to remove route: {e}")
+
+
+@routes.command()
+@click.option('--file', '-f', 'file_', default=".pa.yaml", help="Project config file to sync from")
+@click.pass_context
+def sync(ctx, file_):
+    """Sync routes declared in a project config (.pa.yaml) to the daemon.
+
+    Reads the ``routes:`` list from the given file and POSTs each entry to
+    ``/routes``. Entries already present are skipped (409 → reported, not an
+    error). Requires a ``target:`` per route; if absent, the current daemon
+    URL is used as the backend hint.
+    """
+    client = ctx.obj['client']
+    config_path = Path(file_)
+    if not config_path.exists():
+        click.echo(f"❌ Config file not found: {file_}")
+        sys.exit(1)
+    try:
+        cfg = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError as e:
+        click.echo(f"❌ Failed to parse {file_}: {e}")
+        sys.exit(1)
+
+    route_entries = cfg.get("routes") or []
+    if not route_entries:
+        click.echo(f"ℹ️  No 'routes:' key in {file_}; nothing to sync.")
+        return
+
+    added, skipped, failed = 0, 0, 0
+    for entry in route_entries:
+        host = entry.get("host")
+        target = entry.get("target", f"http://127.0.0.1:{cfg.get('port', 80)}")
+        protocols = entry.get("protocols", ["http"])
+        if not host:
+            click.echo("⚠️  Skipping route entry without a host")
+            failed += 1
+            continue
+        try:
+            client.add_route(host, target, protocols)
+            click.echo(f"✅ Synced: {host} → {target}")
+            added += 1
+        except SystemExit:
+            # _request calls sys.exit on error — the 409 (duplicate) path
+            # is surfaced as "already exists" but we can't easily tell here.
+            skipped += 1
+        except Exception as e:
+            click.echo(f"❌ Failed to sync {host}: {e}")
+            failed += 1
+
+    click.echo(f"\n📊 Synced {added} route(s), {skipped} already present, {failed} failed.")
+
+
+@cli.group()
+def policy():
+    """View and apply daemon policy configuration."""
+    pass
+
+
+@policy.command()
+@click.pass_context
+def show(ctx):
+    """Show the currently loaded daemon policy."""
+    client = ctx.obj['client']
+    payload = client.get_policy()
+    cfg = payload.get("policy", payload) if isinstance(payload, dict) else payload
+    click.echo(yaml.safe_dump(cfg, sort_keys=False).rstrip())
+
+
+@policy.command()
+@click.argument('file_', type=click.Path(exists=True, dir_okay=False))
+@click.pass_context
+def apply(ctx, file_):
+    """Apply a policy fragment from a YAML file.
+
+    Only known top-level keys are accepted (block_patterns, auto_heal,
+    max_ttl, require_admin_for_kill, audit_enabled, gateway). Unknown keys
+    are rejected by the daemon.
+    """
+    client = ctx.obj['client']
+    try:
+        fragment = yaml.safe_load(Path(file_).read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError as e:
+        click.echo(f"❌ Failed to parse {file_}: {e}")
+        sys.exit(1)
+    if not isinstance(fragment, dict):
+        click.echo(f"❌ Policy fragment must be a YAML mapping, got {type(fragment).__name__}")
+        sys.exit(1)
+    try:
+        result = client.apply_policy(fragment)
+        click.echo("✅ Policy applied:")
+        cfg = result.get("policy", result) if isinstance(result, dict) else result
+        click.echo(yaml.safe_dump(cfg, sort_keys=False).rstrip())
+    except SystemExit:
+        # _request already printed the daemon's error (e.g. unknown key).
+        raise
+    except Exception as e:
+        click.echo(f"❌ Failed to apply policy: {e}")
+        sys.exit(1)
+
+
+@policy.command()
+@click.option('--editor', envvar="EDITOR", default=None, help="Editor to use ($EDITOR)")
+@click.pass_context
+def edit(ctx, editor):
+    """Open $EDITOR on a temp policy fragment, then apply it on save."""
+    client = ctx.obj['client']
+    import subprocess as _sp
+    import tempfile
+
+    current = client.get_policy()
+    cfg = current.get("policy", current) if isinstance(current, dict) else current
+
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".yaml", delete=False, encoding="utf-8"
+    ) as tf:
+        tf.write(yaml.safe_dump(cfg, sort_keys=False))
+        tmp_path = tf.name
+
+    chosen = editor or (os.environ.get("VISUAL") or os.environ.get("EDITOR"))
+    if not chosen:
+        click.echo("❌ No editor set. Define $EDITOR or pass --editor.")
+        os.unlink(tmp_path)
+        sys.exit(1)
+
+    try:
+        _sp.run([chosen, tmp_path], check=False)
+        fragment = yaml.safe_load(Path(tmp_path).read_text(encoding="utf-8")) or {}
+        if not isinstance(fragment, dict):
+            click.echo("❌ Edited fragment is not a YAML mapping; aborting.")
+            sys.exit(1)
+        result = client.apply_policy(fragment)
+        click.echo("✅ Policy applied.")
+        cfg = result.get("policy", result) if isinstance(result, dict) else result
+        click.echo(yaml.safe_dump(cfg, sort_keys=False).rstrip())
+    finally:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+
 
 @cli.group()
 def dns():
@@ -926,13 +1088,17 @@ def run(ctx, name, prefer, ttl, env, command):
         if host:
             click.echo(f"🏠 Host: {host}")
         
-        # Auto-create route if gateway enabled
+        # Auto-create route if gateway enabled. A 409 (route already exists)
+        # is treated as success, not a failure.
         if client.config.get("gateway", {}).get("enabled") and host:
+            target = f"http://127.0.0.1:{port}"
             try:
-                client.add_route(host, f"http://127.0.0.1:{port}", ["http", "ws"])
-                click.echo(f"🌐 Route added: {host} → 127.0.0.1:{port}")
-            except:
-                pass  # Route might already exist
+                client.add_route(host, target, ["http", "ws"])
+                click.echo(f"🌐 Route added: {host} → {target}")
+            except SystemExit:
+                # _request exits 1 on the 409 (already-exists) path; treat as
+                # success. Any other error has already been printed by _request.
+                pass
         
     except Exception as e:
         click.echo(f"❌ Failed to spawn process: {e}")
