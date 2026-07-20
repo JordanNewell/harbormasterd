@@ -1,7 +1,9 @@
-# Harbormasterd Dependencies
+# Harbormasterd Runtime Dependencies
+# (Dev/test deps live in pyproject.toml under [project.optional-dependencies].)
 
 # Core web framework and API
 fastapi>=0.104.0
+pydantic>=2.0.0
 uvicorn[standard]>=0.24.0
 requests>=2.31.0
 
@@ -14,30 +16,7 @@ keyring>=24.2.0
 # System monitoring and process management
 psutil>=5.9.0
 
-# Database and persistence
-sqlite3  # Built-in with Python
-apsw>=3.43.2.0  # Advanced SQLite wrapper (optional)
-
-# Networking and security
+# TLS / crypto
 cryptography>=41.0.0
-dnspython>=2.4.0
 
-# Testing dependencies
-pytest>=7.4.0
-pytest-asyncio>=0.21.0
-pytest-timeout>=2.1.0
-pytest-xdist>=3.3.0  # Parallel testing
-
-# Development and debugging
-pytest-cov>=4.1.0  # Coverage reporting
-black>=23.9.0      # Code formatting
-flake8>=6.0.0      # Linting
-
-# Platform-specific networking (optional)
-netifaces>=0.11.0  # Network interface detection
-
-# Optional: Advanced DNS features
-dnslib>=0.9.23     # DNS protocol implementation (optional)
-
-# Optional: TLS certificate management  
-requests-toolbelt>=1.0.0  # HTTP utilities
+# Note: sqlite3 ships with CPython — do not pip-install it.

@@ -1010,22 +1010,18 @@ class TestHarbormasterd:
     
     @classmethod
     def setup_class(cls):
-        """Setup for pytest"""
+        """Setup for pytest — retained for back-compat; no pytest tests here.
+
+        The pytest-callable tests that used to live here always skipped in CI
+        (they required a running daemon) and are now covered exhaustively by
+        ``test_pad_endpoints.py``, which drives the FastAPI app in-process.
+        This file is kept as the orchestrator script behind
+        ``pa selftest --comprehensive``.
+        """
         cls.harness = TestHarness()
-        
-    def test_daemon_health(self):
-        """Test daemon health"""
-        if not self.harness._is_daemon_running():
-            pytest.skip("Daemon not running")
-        result = self.harness._test_daemon_health()
-        assert result.success, result.error
-        
-    def test_port_reservation(self):
-        """Test port reservation"""
-        if not self.harness._is_daemon_running():
-            pytest.skip("Daemon not running")
-        result = self.harness._test_port_reservation()
-        assert result.success, result.error
+
+
+# Main execution
 
 # Main execution
 def main():
