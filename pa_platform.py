@@ -1095,10 +1095,10 @@ def run(ctx, name, prefer, ttl, env, command):
             try:
                 client.add_route(host, target, ["http", "ws"])
                 click.echo(f"🌐 Route added: {host} → {target}")
-            except SystemExit as se:
-                # _request exits 1 on HTTP errors. We can't cheaply recover
-                # the status code here; re-raise so the user sees the message.
-                raise
+            except SystemExit:
+                # _request exits 1 on the 409 (already-exists) path; treat as
+                # success. Any other error has already been printed by _request.
+                pass
         
     except Exception as e:
         click.echo(f"❌ Failed to spawn process: {e}")
