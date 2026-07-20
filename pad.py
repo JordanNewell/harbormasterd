@@ -1160,9 +1160,23 @@ async def kill_port(req: KillRequest, x_api_key: Optional[str] = Header(None)):
             (req.port,),
         ).fetchone()
 
+    if row is not None and row["pid"] is None:
+        # RESERVED lease (no PID bound yet). Refuse to guess what's on the
+        # port — the lease owner never bound, so anything we'd find via
+        # port_pid_map is unrelated to this lease. Caller should release
+        # the lease or wait for /spawn to bind a PID.
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f"Port {req.port} has lease '{row['owner']}' in state "
+                f"{row['state']} with no bound PID; release the lease or "
+                f"bind first"
+            ),
+        )
+
     target_pid = row["pid"] if row else None
     if target_pid is None:
-        # Fall back to whatever psutil sees on the port.
+        # No lease at all — fall back to whatever psutil sees on the port.
         pid_map = port_pid_map()
         pids = pid_map.get(req.port)
         if not pids:

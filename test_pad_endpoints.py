@@ -289,6 +289,25 @@ def test_kill_unknown_port_404(client, fresh_db):
     assert r.status_code == 404
 
 
+def test_kill_reserved_lease_without_pid_409(client, fresh_db):
+    # A RESERVED lease (no PID bound) must not let /kill guess at whatever
+    # else might be on the port. Regression: previously fell through to
+    # port_pid_map with is_managed=False and killed an unrelated process
+    # when force=True.
+    r = client.post("/reserve", json={
+        "name": "reserved-only",
+        "prefer": [59998],
+    }, headers=AUTH)
+    assert r.status_code == 200, r.text
+    port = r.json()["port"]
+    try:
+        r = client.post("/kill", json={"port": port, "force": True}, headers=AUTH)
+        assert r.status_code == 409, r.text
+        assert "no bound PID" in r.json()["detail"]
+    finally:
+        client.post("/release", json={"port": port}, headers=AUTH)
+
+
 # ===========================================================================
 # Routes (/routes GET/POST/DELETE)
 # ===========================================================================
