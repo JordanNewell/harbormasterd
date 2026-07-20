@@ -30,23 +30,29 @@ Developers often waste time managing `localhost` port conflicts, manually settin
 ### 5.3 Developer CLI
 - `pa run`: Start services with auto-port and environment injection.
 - `pa top`: Live monitoring TUI for services and metrics.
-- `pa context`: Switch between local and team-shared development environments.
+- `pa context`: Switch between configurations (local today; team-shared daemon mode is on the roadmap).
 
 ### 5.4 Framework Awareness
 - Auto-detection of frameworks (Next.js, etc.) and injection of the correct `PORT` variable.
 
 ## 6. Technical Architecture
 - **Language**: Python 3.9+
-- **Daemon**: Background service handling DNS and routing.
-- **CLI**: Rich CLI interface for developer interaction.
-- **DNS Core**: Platform-specific handlers for Windows (Registry/Hosts), macOS (resolver files), and Linux (dbus/systemd).
+- **Daemon (`pad`)**: FastAPI service that owns the lease registry, gateway routes, and policy. DNS installation and TLS issuance are invoked by the CLI against the host OS, not by the daemon.
+- **CLI**: `pa` (developer), `pa-platform` (platform setup), both token-authenticated clients of the daemon.
+- **Gateway**: pluggable driver (`TraefikDriver` file provider, `CaddyDriver` admin API).
+- **DNS Core**: Platform-specific handlers for Windows (hosts file), macOS (resolver files), and Linux (systemd-resolved / dnsmasq).
 
 ## 7. Performance Targets
 - **Reservation Latency**: <50ms
 - **Startup Time**: <2 seconds for `pa run`.
-- **Conflict Resolution Rate**: >95% automated success.
+- **Conflict Resolution**: automatic reassignment to the ephemeral range when a preferred port is busy.
 
 ## 8. Success Metrics
 - **Developer Productivity**: Measure time saved on networking setup per dev.
-- **Platform Reliability**: 100% pass rate across the 12-category integration test suite.
+- **Platform Reliability**: passing the in-process endpoint test suite (`test_pad_endpoints.py`) across the CI matrix.
 - **User Engagement**: Adoption of `pa run` as the primary entry point for local development.
+
+## 9. Status (2026-07-20)
+Sections 5.1–5.4 are implemented and covered by the test suite. Not yet built:
+team-shared daemon mode / tunneling (`pa share`), audit-log read endpoint,
+VS Code extension, Docker/Kubernetes integration. These live in the README roadmap.

@@ -22,11 +22,11 @@ Harbormasterd transforms local development by providing intelligent port managem
 - Browser integration (`pa open myapp`)
 - Gateway routing and WebSocket support
 
-🔧 **Production-Ready**  
-- Comprehensive testing suite (12 test categories)
-- CI/CD pipeline with 9 platform combinations  
-- Performance benchmarking and regression detection
-- Enterprise-grade security and certificate management
+🔧 **Production-Minded**
+- Comprehensive endpoint test suite (drives the daemon in-process via FastAPI's TestClient)
+- CI/CD pipeline across 12 platform combinations
+- Token-authenticated API (admin token on every endpoint)
+- Defense-in-depth: parameterized SQL, scoped token storage, OS keyring integration
 
 ## 🚀 Quick Start
 
@@ -41,15 +41,15 @@ pad &
 pa selftest
 
 # 4. Enable zero-config HTTPS and DNS (optional but recommended)
-pa tls trust    # Setup certificates  
-pa dns install  # Configure DNS resolver
+pa-platform tls trust    # Setup + trust certificates
+pa-platform dns install  # Configure DNS resolver for *.pa.local
 
 # 5. Start developing with zero friction
 pa run --name=myapp --prefer=3000 python app.py
 # → Available at https://myapp.pa.local (automatic HTTPS!)
 ```
 
-## 🖥️ Two CLIs
+## 🖥️ Three Entry Points
 
 Harbormasterd ships three entry points:
 
@@ -61,6 +61,19 @@ Harbormasterd ships three entry points:
 
 Most users only need `pa`. Use `pa-platform` for HTTPS/DNS setup and team-shared contexts.
 
+## 📌 Status
+
+Harbormasterd is **beta** software under active development. What works today:
+
+- ✅ **Daemon (`pad`)** — port reservation, process spawning, lease lifecycle (`/reserve`, `/spawn`, `/bind`, `/release`), inspection (`/who`, `/scan`, `/leases`), policy blocks (`/block`, `/unblock`), process kill (`/kill`), gateway routes (`/routes`), policy management (`/policy`), metrics (`/metrics`), health (`/health`), and live SSE events (`/events`). Every endpoint requires the admin token.
+- ✅ **Developer CLI (`pa`)** — `run`, `reserve`, `bind`, `release`, `who`, `scan`, `block`, `unblock`, `kill`, `health`, `events`, `doctor`, `print-token`. All wired to the daemon.
+- ✅ **Platform CLI (`pa-platform`)** — context management, routes (`list`/`add`/`rm`/`sync`), DNS install/status, TLS trust/issue/list, policy (`show`/`apply`/`edit`), metrics, top, selftest.
+- ✅ **Gateway drivers** — Traefik (file provider, default) and Caddy (admin API). Selectable via `data/policy.yaml` `gateway.driver`.
+- ✅ **Cross-platform port detection** (Linux /proc, macOS sysctl, Windows netsh).
+- ✅ **Token-secured API** — every daemon endpoint authenticates via `X-API-Key`.
+
+Not yet implemented (tracked in [#Roadmap](#-roadmap)): audit-log read endpoint, team-shared daemon mode / tunneling (`pa share`), VS Code extension, Kubernetes integration.
+
 ## 📋 Platform Commands
 
 ### Context Management
@@ -70,20 +83,28 @@ pa context create team --daemon-url=https://team.example.com
 pa context use team                # Switch to team context
 ```
 
-### DNS & TLS Setup  
+### DNS & TLS Setup
 ```bash
-pa dns install                     # Install local DNS resolver
-pa dns status                      # Check DNS status
-pa tls trust                       # Setup HTTPS certificates
-pa tls list                        # Show available certificates
+pa-platform dns install            # Install local DNS resolver for *.pa.local
+pa-platform dns status             # Check DNS status
+pa-platform tls trust              # Setup + trust HTTPS certificates
+pa-platform tls list               # Show available certificates
+```
+
+### Policy Management
+```bash
+pa-platform policy show            # Show the daemon's current policy
+pa-platform policy apply p.yaml    # Merge a policy fragment
+pa-platform policy edit            # Open $EDITOR, apply on save
 ```
 
 ### Service Management
 ```bash
 pa run --name=api python server.py          # Start with auto port
-pa open api                                  # Open in browser  
-pa url api                                   # Get service URL
-pa routes list                               # Show active routes
+pa-platform open api                        # Open service URL in browser
+pa-platform url api                         # Print service URL for scripts
+pa-platform routes list                     # Show gateway routes
+pa-platform routes sync -f .pa.yaml         # Sync routes from project config
 ```
 
 ### Monitoring & Debugging
@@ -95,6 +116,23 @@ pa selftest --comprehensive        # Full integration test
 ```
 
 ## 🔧 Configuration
+
+### Authentication
+
+Every daemon endpoint requires an admin token. The token is generated automatically on first `pad` startup and persisted to your OS keyring (fallback: `~/.harbormasterd/daemon.token`, mode 0600).
+
+```bash
+# The CLI reads the token automatically — no setup needed on the same machine.
+# To see the current token (e.g. for a remote context):
+pa print-token
+
+# To override (CI, remote daemon, etc.):
+export PAD_ADMIN_TOKEN="$(pa print-token)"
+# or set it directly:
+export PAD_ADMIN_TOKEN="<64-char hex token>"
+```
+
+The CLI sends the token via the `X-API-Key` header on every request.
 
 ### Environment Variables
 
@@ -250,11 +288,11 @@ echo "service: my-app" > .pa.yaml
 
 After setup, you should see:
 
-- ✅ **Zero "port already in use" errors**
-- ✅ **Sub-2-second startup times** with `pa run`
-- ✅ **>95% automatic conflict resolution**
-- ✅ **Beautiful *.pa.local URLs** instead of port numbers
-- ✅ **Real-time port monitoring** and auto-healing
+- ✅ **Fewer "port already in use" errors** — `pa run` finds a free port automatically
+- ✅ **Fast startup** with `pa run` (port reservation is a single round-trip)
+- ✅ **Automatic conflict resolution** — preferred ports fall back to the ephemeral range
+- ✅ **Beautiful *.pa.local URLs** instead of port numbers (with DNS installed)
+- ✅ **Real-time port monitoring** and auto-healing of dead managed processes
 
 ## 🧪 Testing & Validation
 
@@ -271,10 +309,10 @@ pa selftest --json
 ```
 
 ### CI/CD Pipeline
-- **Platform Matrix**: Ubuntu, macOS, Windows × Python 3.9-3.11
-- **Test Coverage**: 9 platform combinations  
+- **Platform Matrix**: Ubuntu, macOS, Windows × Python 3.9–3.12
+- **Test Coverage**: 12 platform combinations
 - **Runtime**: < 10 minutes total
-- **Validation**: DNS, TLS, routing, conflicts, performance
+- **Validation**: import smoke, token storage, full daemon endpoint suite
 
 See [`TESTING.md`](TESTING.md) for complete testing documentation.
 
@@ -285,12 +323,12 @@ See [`TESTING.md`](TESTING.md) for complete testing documentation.
 - **Conflict Detection**: < 25ms  
 - **DNS Resolution**: < 5ms local queries
 - **TLS Setup**: < 3s certificate installation
-- **CI Pipeline**: < 10min (9 platforms in parallel)
+- **CI Pipeline**: < 10min (12 platforms in parallel)
 
 ### Success Criteria
-✅ **8/8 self-tests pass** on all platforms  
-✅ **< 100ms** average operation latency  
-✅ **Zero-config setup** for DNS and TLS  
+✅ **Daemon endpoint suite passes** on every supported platform
+✅ **Zero-config token auth** — generated on first run, persisted to keyring
+✅ **Zero-config setup** for DNS and TLS (optional, with graceful fallbacks)
 ✅ **Graceful fallbacks** for optional features
 
 ## 🔧 Development
@@ -307,8 +345,8 @@ python -m pytest test_integration.py -v
 pad
 
 # Test specific features
-pa dns status
-pa tls setup
+pa-platform dns status
+pa-platform tls status
 pa selftest --comprehensive
 ```
 
@@ -343,22 +381,22 @@ pa selftest --comprehensive
 ## 📚 Roadmap
 
 ### Short Term
+- [ ] Audit-log read endpoint (`GET /audit`) — the hash chain is written today, just not yet queryable
+- [ ] Gateway health probe (is the configured Traefik/Caddy actually up?)
+- [ ] `.pa.yaml` schema validation in `pa doctor`
+- [ ] Auto-discovery of development servers
+
+### Medium Term
 - [ ] Docker integration for containerized development
 - [ ] VS Code extension for seamless IDE integration
-- [ ] Auto-discovery of development servers  
+- [ ] Plugin system for extensibility
 - [ ] Enhanced observability dashboard
 
-### Medium Term  
-- [ ] Team collaboration features
-- [ ] Cloud deployment integration
-- [ ] Advanced routing policies
-- [ ] Plugin system for extensibility
-
 ### Long Term
+- [ ] Team-shared daemon mode + `pa share <service>` tunneling (cloudflared/ngrok)
 - [ ] Kubernetes integration
-- [ ] Multi-cluster management  
-- [ ] Enterprise SSO integration
-- [ ] Advanced security policies
+- [ ] Multi-cluster management
+- [ ] Enterprise SSO / RBAC
 
 ## 🤝 Support
 
@@ -388,4 +426,4 @@ pa selftest --comprehensive && echo "🚢 Welcome aboard the Harbormasterd platf
 
 *Developed with ❤️ by the Harbormasterd maintainers*  
 *Platform tested on Windows 11, macOS Ventura, Ubuntu 22.04*  
-*Comprehensive CI/CD pipeline validates every commit across 9 platform combinations*
+*Comprehensive CI/CD pipeline validates every commit across 12 platform combinations*

@@ -75,8 +75,8 @@ The `.github/workflows/test-platform.yml` runs comprehensive tests on every push
 
 #### Test Matrix
 - **Platforms**: Ubuntu, macOS, Windows
-- **Python**: 3.9, 3.10, 3.11  
-- **Total**: 9 platform combinations
+- **Python**: 3.9, 3.10, 3.11, 3.12
+- **Total**: 12 platform combinations
 - **Timeout**: 10 minutes per combination
 
 #### Test Stages

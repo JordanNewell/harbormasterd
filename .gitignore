@@ -10,6 +10,8 @@ dist/
 data/*.db
 data/*.db-journal
 data/*.jsonl
+data/routes.json
+data/traefik_routes.yaml
 
 # Local-only files
 mailmap.txt
