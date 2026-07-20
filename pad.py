@@ -45,7 +45,7 @@ logger = logging.getLogger("PAD")
 app = FastAPI(
     title="Harbormasterd",
     description="Zero-config local development port management",
-    version="1.0.1"
+    version="1.1.0"
 )
 
 # Configuration paths
@@ -837,7 +837,7 @@ async def health_check(authorized=Depends(require_admin)):
     
     return {
         "status": "healthy",
-        "version": "1.0.1",
+        "version": "1.1.0",
         "timestamp": datetime.utcnow().isoformat(),
         "uptime": time.time() - start_time if 'start_time' in globals() else 0,
         "active_leases": gauges["leases_active"],
@@ -1412,7 +1412,7 @@ async def startup():
     logger.info(f"📊 Ephemeral range: {EPHEMERAL_START}-{EPHEMERAL_END}")
     logger.info(f"🌐 Gateway domain: {policy.policy.get('gateway', {}).get('domain', 'pa.local')}")
     
-    await emit_event("system.started", version="1.0.1")
+    await emit_event("system.started", version="1.1.0")
 
 def main():
     """Entry point for the `pad` console script."""
