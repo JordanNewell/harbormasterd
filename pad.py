@@ -54,6 +54,7 @@ DATA_DIR = os.path.join(BASE_DIR, "data")
 POLICY_FILE = os.path.join(DATA_DIR, "policy.yaml")
 AUDIT_LOG = os.path.join(DATA_DIR, "audit.jsonl")
 DB_PATH = os.path.join(DATA_DIR, "pad.db")
+ROUTES_STORE = os.path.join(DATA_DIR, "routes.json")
 
 os.makedirs(DATA_DIR, exist_ok=True)
 
@@ -90,6 +91,10 @@ _managed_processes: Dict[int, subprocess.Popen] = {}
 _guard_sockets: Dict[int, List[socket.socket]] = {}
 _event_subscribers: Set[asyncio.Queue] = set()
 
+# Captured at startup so background threads can schedule coroutines
+# on the running event loop. None until the lifespan starts.
+_main_loop: Optional[asyncio.AbstractEventLoop] = None
+
 # Audit chain (simple Merkle-like)
 _last_audit_hash = "genesis"
 
@@ -123,68 +128,116 @@ class GatewayDriver(ABC):
         pass
 
 class TraefikDriver(GatewayDriver):
-    """Traefik file provider driver"""
-    
-    def __init__(self, config_path: str = None):
+    """Traefik file provider driver.
+
+    Routes are persisted to ROUTES_STORE (JSON) so they survive restarts,
+    and projected to ``traefik_routes.yaml`` for an external Traefik to
+    consume via its file provider.
+    """
+
+    def __init__(self, config_path: str = None, store_path: str = None):
         self.config_path = config_path or os.path.join(DATA_DIR, "traefik_routes.yaml")
-        self.routes = {}
-    
+        self.store_path = store_path or ROUTES_STORE
+        self.routes: Dict[str, Dict[str, Any]] = {}
+        self._load_routes()
+
+    def _load_routes(self) -> None:
+        """Load persisted routes from the JSON store."""
+        try:
+            if os.path.exists(self.store_path):
+                with open(self.store_path, "r") as f:
+                    data = json.load(f)
+                if isinstance(data, dict):
+                    # Drop any legacy empty-key entry from the old remove_route bug.
+                    self.routes = {k: v for k, v in data.items() if k}
+        except Exception as e:
+            logger.warning(f"Failed to load routes store: {e}")
+            self.routes = {}
+
+    def _persist_routes(self) -> None:
+        """Atomically write the routes JSON store."""
+        tmp = self.store_path + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump(self.routes, f, indent=2)
+        os.replace(tmp, self.store_path)
+
+    def _write_config(self) -> None:
+        """Regenerate the Traefik file-provider config from self.routes."""
+        config = {"http": {"routers": {}, "services": {}}}
+        for route_name, route_data in self.routes.items():
+            config["http"]["routers"][route_name] = {
+                "rule": f"Host(`{route_data['host']}`)",
+                "service": route_name,
+            }
+            config["http"]["services"][route_name] = {
+                "loadBalancer": {
+                    "servers": [{"url": route_data["target"]}]
+                }
+            }
+        with open(self.config_path, "w") as f:
+            yaml.dump(config, f)
+
     def upsert_route(self, name: str, host: str, target: str, protocols: List[str]) -> bool:
         try:
             self.routes[name] = {
                 "host": host,
                 "target": target,
-                "protocols": protocols
+                "protocols": protocols,
             }
-            
-            # Generate Traefik config
-            config = {
-                "http": {
-                    "routers": {},
-                    "services": {}
-                }
-            }
-            
-            for route_name, route_data in self.routes.items():
-                config["http"]["routers"][route_name] = {
-                    "rule": f"Host(`{route_data['host']}`)",
-                    "service": route_name
-                }
-                
-                config["http"]["services"][route_name] = {
-                    "loadBalancer": {
-                        "servers": [{"url": route_data["target"]}]
-                    }
-                }
-            
-            # Write config file
-            with open(self.config_path, 'w') as f:
-                yaml.dump(config, f)
-            
-            logger.info(f"Updated Traefik route: {host} -> {target}")
+            self._write_config()
+            self._persist_routes()
+            logger.info(f"Updated Traefik route: {name} ({host} -> {target})")
             return True
-            
         except Exception as e:
             logger.error(f"Failed to upsert route {name}: {e}")
             return False
-    
+
     def remove_route(self, name: str) -> bool:
         try:
-            if name in self.routes:
-                del self.routes[name]
-                # Regenerate config without this route
-                return self.upsert_route("", "", "", [])  # Trigger config rewrite
+            if name not in self.routes:
+                return False
+            del self.routes[name]
+            self._write_config()
+            self._persist_routes()
+            logger.info(f"Removed Traefik route: {name}")
             return True
         except Exception as e:
             logger.error(f"Failed to remove route {name}: {e}")
             return False
-    
+
+    def find_by_host(self, host: str) -> Optional[str]:
+        """Return the route name whose host matches, or None."""
+        for name, data in self.routes.items():
+            if data.get("host") == host:
+                return name
+        return None
+
     def reload(self) -> bool:
-        # Traefik watches file changes automatically
+        # Traefik watches the file provider automatically.
         return True
 
-# Initialize gateway driver
-gateway_driver = TraefikDriver()
+
+def get_gateway_driver(driver_name: str, policy_gateway_cfg: Dict[str, Any]) -> "GatewayDriver":
+    """Factory selecting a gateway driver by name.
+
+    ``traefik`` (default) writes a file-provider YAML for an external Traefik.
+    ``caddy`` talks to a running Caddy's admin API and also manages TLS.
+    Unknown names fall back to traefik with a warning.
+    """
+    name = (driver_name or "traefik").lower()
+    if name == "caddy":
+        try:
+            from drivers.caddy import CaddyDriver
+            return CaddyDriver(config={
+                "domain": policy_gateway_cfg.get("domain", "pa.local"),
+            })
+        except Exception as e:
+            logger.warning(f"Caddy driver unavailable ({e}); falling back to traefik")
+            return TraefikDriver()
+    if name != "traefik":
+        logger.warning(f"Unknown gateway driver '{name}'; falling back to traefik")
+    return TraefikDriver()
+
 
 # Policy Management
 class Policy:
@@ -205,7 +258,8 @@ class Policy:
             "gateway": {
                 "enabled": True,
                 "domain": "pa.local",
-                "auto_tls": True
+                "auto_tls": True,
+                "driver": "traefik",
             }
         }
         
@@ -239,6 +293,10 @@ class Policy:
 
 # Initialize policy
 policy = Policy(POLICY_FILE)
+
+# Initialize gateway driver based on policy. Must come after `policy` exists.
+_gateway_cfg = policy.policy.get("gateway", {})
+gateway_driver = get_gateway_driver(_gateway_cfg.get("driver", "traefik"), _gateway_cfg)
 
 # Audit Trail
 def audit_log(event_type: str, **data):
@@ -316,6 +374,21 @@ class BindRequest(BaseModel):
 class ReleaseRequest(BaseModel):
     port: Optional[int] = Field(None, description="Port to release")
     name: Optional[str] = Field(None, description="Service name to release all ports for")
+
+class BlockRequest(BaseModel):
+    port: int = Field(..., description="Port to block")
+    reason: str = Field("Manual block", description="Reason for blocking")
+    duration_sec: Optional[int] = Field(None, description="Block duration in seconds (None = permanent)")
+
+class KillRequest(BaseModel):
+    port: int = Field(..., description="Port whose process should be killed")
+    force: bool = Field(False, description="Send SIGKILL if SIGTERM fails")
+
+class RouteRequest(BaseModel):
+    host: str = Field(..., description="Host header to route (e.g. myapp.pa.local)")
+    target: str = Field(..., description="Backend URL (e.g. http://127.0.0.1:3000)")
+    protocols: Optional[List[str]] = Field(["http"], description="Protocols: http, ws")
+    namespace: Optional[str] = Field(None, description="Optional namespace prefix for the route name")
 
 class LeaseResponse(BaseModel):
     port: int
@@ -498,7 +571,13 @@ def auto_heal_check():
                     
                     metrics["auto_heals_total"] += 1
                     audit_log("auto_heal", port=port, owner=owner, dead_pid=pid)
-                    asyncio.create_task(emit_event("lease.auto_healed", port=port, owner=owner, pid=pid))
+                    # Background thread has no running loop — schedule onto the
+                    # main uvicorn loop captured at startup.
+                    if _main_loop is not None and _main_loop.is_running():
+                        asyncio.run_coroutine_threadsafe(
+                            emit_event("lease.auto_healed", port=port, owner=owner, pid=pid),
+                            _main_loop,
+                        )
 
 # Background tasks
 def background_tasks():
@@ -553,7 +632,7 @@ def require_admin(x_api_key: Optional[str] = Header(None)):
 # API Routes
 
 @app.get("/events")
-async def events(request: Request):
+async def events(request: Request, authorized=Depends(require_admin)):
     """Server-sent events stream for real-time updates"""
     global _event_subscribers
     
@@ -590,7 +669,7 @@ async def events(request: Request):
     )
 
 @app.post("/spawn", response_model=LeaseResponse)
-async def spawn_process(req: SpawnRequest):
+async def spawn_process(req: SpawnRequest, authorized=Depends(require_admin)):
     """Atomic reserve + spawn process with zero race conditions"""
     start_time = time.time()
     
@@ -603,9 +682,10 @@ async def spawn_process(req: SpawnRequest):
         if not _bind_guard(port):
             raise HTTPException(status_code=409, detail=f"Could not secure port {port}")
         
-        # Create lease
+        # Create lease — clamp TTL against policy (matches /reserve behavior).
         now = int(time.time())
-        expires_at = now + req.ttl_sec if req.ttl_sec > 0 else None
+        ttl = min(req.ttl_sec, policy.max_ttl()) if req.ttl_sec > 0 else 0
+        expires_at = now + ttl if ttl > 0 else None
         host, url = generate_host_url(port, req.name, req.host, ["http"])
         
         with get_db() as conn:
@@ -617,7 +697,7 @@ async def spawn_process(req: SpawnRequest):
                     owner=excluded.owner, state=excluded.state, ttl=excluded.ttl,
                     ts=excluded.ts, expires_at=excluded.expires_at, host=excluded.host,
                     spawned_by_pad=1, auto_heal=1
-            """, (port, req.name, "RESERVED", req.ttl_sec, now, expires_at, host))
+            """, (port, req.name, "RESERVED", ttl, now, expires_at, host))
             conn.commit()
         
         # Prepare environment
@@ -682,7 +762,7 @@ async def spawn_process(req: SpawnRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/reserve", response_model=LeaseResponse)
-async def reserve_port(req: ReserveRequest):
+async def reserve_port(req: ReserveRequest, authorized=Depends(require_admin)):
     """Reserve a port with automatic conflict resolution"""
     # Apply TTL policy limit
     ttl = min(req.ttl_sec, policy.max_ttl())
@@ -736,7 +816,7 @@ async def reserve_port(req: ReserveRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/health")
-async def health_check():
+async def health_check(authorized=Depends(require_admin)):
     """Enhanced health check with system stats"""
     gauges = {
         "leases_active": 0,
@@ -770,24 +850,540 @@ async def health_check():
     }
 
 # Continue with other endpoints...
-# (The response got too long, so I'll create the CLI tool next)
+
+@app.post("/bind", response_model=LeaseResponse)
+async def bind_port(req: BindRequest, authorized=Depends(require_admin)):
+    """Mark a reserved port as bound to an external PID.
+
+    Transitions a lease from RESERVED → BOUND and records the binding PID.
+    Used when a process was started outside the daemon (via `pa run` without
+    a managed subprocess, or by the OS) and now owns the port.
+    """
+    now = int(time.time())
+    with get_db() as conn:
+        row = conn.execute(
+            "SELECT port, owner, state, ttl, expires_at, host FROM leases WHERE port = ?",
+            (req.port,),
+        ).fetchone()
+
+        if row is None:
+            raise HTTPException(status_code=404, detail=f"No lease for port {req.port}")
+        if row["state"] == "BLOCKED":
+            raise HTTPException(status_code=409, detail=f"Port {req.port} is blocked")
+        if row["state"] == "BOUND" and row["owner"] != req.name:
+            # Allow rebinding only by the original owner to avoid clobbering.
+            raise HTTPException(status_code=409, detail=f"Port {req.port} already bound")
+
+        # Release any guard we held during the RESERVED window.
+        _release_guard(req.port)
+
+        conn.execute(
+            "UPDATE leases SET state = 'BOUND', pid = ?, owner = ?, ts = ? WHERE port = ?",
+            (req.pid, req.name, now, req.port),
+        )
+        conn.commit()
+
+        host = row["host"]
+        _, url = generate_host_url(req.port, req.name, host, ["http"])
+
+    audit_log("port.bound", port=req.port, owner=req.name, pid=req.pid)
+    await emit_event("lease.bound", port=req.port, owner=req.name, pid=req.pid, url=url)
+    logger.info(f"Bound port {req.port} to {req.name} (PID: {req.pid})")
+
+    return LeaseResponse(
+        port=req.port,
+        url=url,
+        host=host,
+        pid=req.pid,
+        expires_at=row["expires_at"],
+        state="BOUND",
+    )
+
+
+@app.post("/release")
+async def release_port(req: ReleaseRequest, authorized=Depends(require_admin)):
+    """Release a lease by port or by service name."""
+    if req.port is None and req.name is None:
+        raise HTTPException(status_code=400, detail="Provide either port or name")
+
+    with get_db() as conn:
+        if req.port is not None:
+            rows = conn.execute(
+                "SELECT port, owner, state FROM leases WHERE port = ?", (req.port,)
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT port, owner, state FROM leases WHERE owner = ?", (req.name,)
+            ).fetchall()
+
+        if not rows:
+            raise HTTPException(status_code=404, detail="No matching lease")
+
+        released = []
+        for row in rows:
+            _release_guard(row["port"])
+            conn.execute("DELETE FROM leases WHERE port = ?", (row["port"],))
+            released.append({"port": row["port"], "owner": row["owner"], "state": row["state"]})
+            audit_log("port.released", port=row["port"], owner=row["owner"])
+            await emit_event("lease.released", port=row["port"], owner=row["owner"])
+        conn.commit()
+
+    logger.info(f"Released {len(released)} lease(s)")
+    return {"released": released, "count": len(released)}
+
+
+@app.get("/who")
+async def who(port: Optional[int] = None, service: Optional[str] = None,
+              authorized=Depends(require_admin)):
+    """Return ownership and state for a port or a named service.
+
+    - ``?port=N`` — look up the lease for that port.
+    - ``?service=<owner>`` — look up the lease whose owner matches (e.g.
+      ``default/api``). Used by ``pa-platform open`` / ``url``.
+    At least one of the two must be provided.
+    """
+    if port is None and not service:
+        raise HTTPException(status_code=400, detail="Provide either port or service")
+
+    with get_db() as conn:
+        if service:
+            row = conn.execute(
+                """SELECT port, owner, state, pid, ttl, expires_at, host,
+                          spawned_by_pad, auto_heal, reason, ts, created_at
+                   FROM leases WHERE owner = ? ORDER BY ts DESC LIMIT 1""",
+                (service,),
+            ).fetchone()
+        else:
+            row = conn.execute(
+                """SELECT port, owner, state, pid, ttl, expires_at, host,
+                          spawned_by_pad, auto_heal, reason, ts, created_at
+                   FROM leases WHERE port = ?""",
+                (port,),
+            ).fetchone()
+
+    if row is None:
+        # If a port was given, also report unmanaged listeners on it.
+        if port is not None:
+            pids = port_pid_map().get(port)
+            if pids:
+                return {"port": port, "state": "UNMANAGED", "pids": sorted(pids)}
+        raise HTTPException(
+            status_code=404,
+            detail=f"No lease or listener for {f'port {port}' if port else f'service {service}'}",
+        )
+
+    # Include a derived ``url`` so ``pa-platform open``/``url`` can open it.
+    _, url = generate_host_url(row["port"], row["owner"], row["host"], ["http"])
+    return {**dict(row), "url": url}
+
+
+@app.get("/scan")
+async def scan(authorized=Depends(require_admin)):
+    """Return all managed leases plus unmanaged listening ports.
+
+    Returns both the canonical shape (``managed`` / ``unmanaged``) and a
+    legacy-compatible flat view (``active_ports`` / ``conflicts`` /
+    ``guarded_ports`` / ``metrics`` / ``scanned_at``) that older CLIs
+    (``pa scan``, ``pa top``) read directly.
+    """
+    now = int(time.time())
+    pid_map = port_pid_map()
+
+    with get_db() as conn:
+        managed = [dict(r) for r in conn.execute(
+            """SELECT port, owner, state, pid, ttl, expires_at, host, reason
+               FROM leases ORDER BY port"""
+        ).fetchall()]
+
+    managed_ports = {r["port"] for r in managed}
+    unmanaged = []
+    for port, pids in sorted(pid_map.items()):
+        if port in managed_ports:
+            continue
+        unmanaged.append({"port": port, "state": "UNMANAGED", "pids": sorted(pids)})
+
+    # Legacy "active_ports" view: combine managed leases + unmanaged listeners
+    # into a single sorted list with the row shape format_port_status expects.
+    active_ports = []
+    conflicts = []
+    for r in managed:
+        active_ports.append({
+            "port": r["port"],
+            "state": r["state"],
+            "owner": r["owner"],
+            "pid": r["pid"],
+            "host": r.get("host"),
+            "expires_at": r.get("expires_at"),
+            "reason": r.get("reason"),
+        })
+        # Conflict: BOUND lease whose recorded pid is dead, but the port is
+        # held by a different pid.
+        if r["state"] == "BOUND" and r["pid"]:
+            actual = pid_map.get(r["port"], set())
+            if r["pid"] not in actual and actual:
+                conflicts.append({
+                    "port": r["port"],
+                    "lease_owner": r["owner"],
+                    "lease_pid": r["pid"],
+                    "actual_pid": sorted(actual),
+                })
+    for u in unmanaged:
+        active_ports.append({
+            "port": u["port"],
+            "state": "UNMANAGED",
+            "owner": None,
+            "pid": (u["pids"][0] if u["pids"] else None),
+            "host": None,
+            "expires_at": None,
+            "reason": None,
+        })
+    active_ports.sort(key=lambda x: x["port"])
+
+    if conflicts:
+        metrics["conflicts_detected_total"] += len(conflicts)
+
+    return {
+        # Canonical shape:
+        "managed": managed,
+        "unmanaged": unmanaged,
+        "managed_count": len(managed),
+        "unmanaged_count": len(unmanaged),
+        # Legacy-compatible shape:
+        "scanned_at": datetime.utcnow().isoformat(),
+        "active_ports": active_ports,
+        "conflicts": conflicts,
+        "guarded_ports": sorted(_guard_sockets.keys()),
+        "metrics": {
+            "leases_active": sum(1 for r in managed if r["state"] != "BLOCKED"),
+            "blocks_active": sum(1 for r in managed if r["state"] == "BLOCKED"),
+            "conflicts_detected_total": metrics["conflicts_detected_total"],
+            "reassignments_total": metrics["reassignments_total"],
+        },
+    }
+
+
+@app.get("/leases")
+async def list_leases(state: Optional[str] = None, authorized=Depends(require_admin)):
+    """List leases, optionally filtered by state."""
+    valid = {"FREE", "RESERVED", "BOUND", "BLOCKED"}
+    if state is not None and state.upper() not in valid:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid state '{state}'. Must be one of: {sorted(valid)}",
+        )
+
+    with get_db() as conn:
+        if state is not None:
+            rows = conn.execute(
+                """SELECT port, owner, state, pid, ttl, expires_at, host, auto_heal, ts
+                   FROM leases WHERE state = ? ORDER BY port""",
+                (state.upper(),),
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                """SELECT port, owner, state, pid, ttl, expires_at, host, auto_heal, ts
+                   FROM leases ORDER BY port"""
+            ).fetchall()
+
+    return {"leases": [dict(r) for r in rows], "count": len(rows)}
+
+
+@app.post("/block")
+async def block_port(req: BlockRequest, authorized=Depends(require_admin)):
+    """Block a port: insert a BLOCKED lease and guard the port."""
+    if not _bind_guard(req.port):
+        # Port is busy — record the block anyway, but surface the conflict.
+        logger.warning(f"Could not fully guard port {req.port} for blocking")
+
+    now = int(time.time())
+    expires_at = now + req.duration_sec if req.duration_sec else None
+
+    with get_db() as conn:
+        conn.execute(
+            """INSERT INTO leases (port, owner, state, ts, expires_at, reason)
+               VALUES (?, ?, 'BLOCKED', ?, ?, ?)
+               ON CONFLICT(port) DO UPDATE SET
+                   state='BLOCKED', owner=excluded.owner, ts=excluded.ts,
+                   expires_at=excluded.expires_at, reason=excluded.reason""",
+            (req.port, "PAD_SYSTEM", now, expires_at, req.reason),
+        )
+        conn.commit()
+
+    audit_log("port.blocked", port=req.port, reason=req.reason, expires_at=expires_at)
+    await emit_event("port.blocked", port=req.port, reason=req.reason)
+    logger.info(f"Blocked port {req.port}: {req.reason}")
+    return {"port": req.port, "state": "BLOCKED", "reason": req.reason, "expires_at": expires_at}
+
+
+@app.post("/unblock")
+async def unblock_port(port: int, authorized=Depends(require_admin)):
+    """Remove a BLOCKED lease and release its guard."""
+    with get_db() as conn:
+        row = conn.execute(
+            "SELECT port, owner, state FROM leases WHERE port = ?", (port,)
+        ).fetchone()
+        if row is None:
+            raise HTTPException(status_code=404, detail=f"No lease for port {port}")
+        if row["state"] != "BLOCKED":
+            raise HTTPException(
+                status_code=409,
+                detail=f"Port {port} is {row['state']}, not BLOCKED",
+            )
+        conn.execute("DELETE FROM leases WHERE port = ?", (port,))
+        conn.commit()
+
+    _release_guard(port)
+    audit_log("port.unblocked", port=port)
+    await emit_event("port.unblocked", port=port)
+    logger.info(f"Unblocked port {port}")
+    return {"port": port, "state": "FREE"}
+
+
+@app.post("/kill")
+async def kill_port(req: KillRequest, x_api_key: Optional[str] = Header(None)):
+    """Kill the process listening on a port, then release its lease.
+
+    Auth policy is configurable: when ``policy.require_admin_for_kill`` is
+    True (the default), the admin token is required. When False, any caller
+    may kill (useful for shared dev boxes). Non-daemon processes are still
+    gated behind ``force`` regardless of policy.
+
+    Tries SIGTERM first; sends SIGKILL if `force` is set or the process
+    survives SIGTERM. Non-daemon processes are killed only when `force`.
+    """
+    if policy.policy.get("require_admin_for_kill", True):
+        if not x_api_key or x_api_key != ADMIN_TOKEN:
+            raise HTTPException(status_code=403, detail="Admin token required")
+    with get_db() as conn:
+        row = conn.execute(
+            "SELECT port, owner, state, pid, spawned_by_pad FROM leases WHERE port = ?",
+            (req.port,),
+        ).fetchone()
+
+    target_pid = row["pid"] if row else None
+    if target_pid is None:
+        # Fall back to whatever psutil sees on the port.
+        pid_map = port_pid_map()
+        pids = pid_map.get(req.port)
+        if not pids:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No process or lease for port {req.port}",
+            )
+        if len(pids) > 1 and not req.force:
+            raise HTTPException(
+                status_code=409,
+                detail=f"Multiple PIDs on port {req.port}: {sorted(pids)} (use --force)",
+            )
+        target_pid = next(iter(pids))
+        is_managed = False
+    else:
+        is_managed = bool(row["spawned_by_pad"])
+
+    try:
+        proc = psutil.Process(target_pid)
+    except psutil.NoSuchProcess:
+        # Already dead — fall through to release the lease.
+        proc = None
+
+    killed = []
+    if proc is not None:
+        if not is_managed and not req.force:
+            raise HTTPException(
+                status_code=403,
+                detail=f"Port {req.port} is held by non-daemon PID {target_pid}; use --force",
+            )
+        children = proc.children(recursive=True)
+        proc.terminate()
+        try:
+            proc.wait(timeout=5)
+            killed.append(target_pid)
+        except psutil.TimeoutExpired:
+            if not req.force:
+                raise HTTPException(
+                    status_code=409,
+                    detail=f"PID {target_pid} ignored SIGTERM; use --force for SIGKILL",
+                )
+            proc.kill()
+            killed.append(target_pid)
+        for child in children:
+            try:
+                child.kill()
+                killed.append(child.pid)
+            except psutil.NoSuchProcess:
+                pass
+
+    # Release the lease if we owned it.
+    if row is not None:
+        with get_db() as conn:
+            conn.execute("DELETE FROM leases WHERE port = ?", (req.port,))
+            conn.commit()
+        _release_guard(req.port)
+        audit_log("port.killed", port=req.port, pid=target_pid, pids=killed)
+        await emit_event("lease.killed", port=req.port, pid=target_pid)
+
+    logger.info(f"Killed PID(s) {killed} on port {req.port}")
+    return {"port": req.port, "killed_pids": killed}
+
+
+@app.get("/metrics")
+async def get_metrics(authorized=Depends(require_admin)):
+    """Expose daemon counters and live gauges.
+
+    Returns a nested shape (``counters`` / ``gauges``) plus flat top-level
+    aliases so legacy clients that read ``metrics['leases_active']`` keep
+    working without per-key rewrites.
+    """
+    now = int(time.time())
+    with get_db() as conn:
+        leases_active = conn.execute(
+            """SELECT COUNT(*) as c FROM leases
+               WHERE state != 'BLOCKED' AND (expires_at IS NULL OR expires_at > ?)""",
+            (now,),
+        ).fetchone()["c"]
+        blocks_active = conn.execute(
+            """SELECT COUNT(*) as c FROM leases
+               WHERE state = 'BLOCKED' AND (expires_at IS NULL OR expires_at > ?)""",
+            (now,),
+        ).fetchone()["c"]
+
+    gauges = {
+        "leases_active": leases_active,
+        "blocks_active": blocks_active,
+        "guarded_ports": len(_guard_sockets),
+        "managed_processes": len(_managed_processes),
+        "event_subscribers": len(_event_subscribers),
+    }
+    return {
+        "counters": dict(metrics),
+        "gauges": gauges,
+        # Flat aliases for legacy clients:
+        "leases_active": leases_active,
+        "blocks_active": blocks_active,
+        "conflicts_detected_total": metrics["conflicts_detected_total"],
+        "reassignments_total": metrics["reassignments_total"],
+        "violations_total": metrics["violations_total"],
+        "processes_spawned_total": metrics["processes_spawned_total"],
+        "auto_heals_total": metrics["auto_heals_total"],
+        "ephemeral_range": [EPHEMERAL_START, EPHEMERAL_END],
+        "timestamp": datetime.utcnow().isoformat(),
+    }
+
+
+# ---- Gateway routes --------------------------------------------------------
+
+@app.get("/routes")
+async def list_routes(namespace: Optional[str] = None, authorized=Depends(require_admin)):
+    """List gateway routes, optionally filtered by namespace."""
+    routes = []
+    for name, data in gateway_driver.routes.items():
+        if namespace and not name.startswith(f"{namespace}/"):
+            continue
+        routes.append({"name": name, **data})
+    return {"routes": routes, "count": len(routes)}
+
+
+@app.post("/routes")
+async def add_route(req: RouteRequest, authorized=Depends(require_admin)):
+    """Add or update a gateway route."""
+    if gateway_driver.find_by_host(req.host) is not None:
+        raise HTTPException(status_code=409, detail=f"Route for host '{req.host}' already exists")
+
+    # Derive a route name. Namespace it if provided so list-by-namespace works.
+    base_name = req.host.split(".")[0].replace("-", "_") or "route"
+    name = f"{req.namespace}/{base_name}" if req.namespace else base_name
+    # Guarantee uniqueness against existing names.
+    if name in gateway_driver.routes:
+        suffix = 1
+        candidate = f"{name}_{suffix}"
+        while candidate in gateway_driver.routes:
+            suffix += 1
+            candidate = f"{name}_{suffix}"
+        name = candidate
+
+    ok = gateway_driver.upsert_route(name, req.host, req.target, req.protocols or ["http"])
+    if not ok:
+        raise HTTPException(status_code=500, detail="Gateway driver rejected the route")
+    audit_log("route.added", name=name, host=req.host, target=req.target)
+    await emit_event("route.added", name=name, host=req.host, target=req.target)
+    return {"name": name, "host": req.host, "target": req.target, "protocols": req.protocols}
+
+
+@app.delete("/routes/{host}")
+async def remove_route(host: str, authorized=Depends(require_admin)):
+    """Remove a gateway route by host."""
+    name = gateway_driver.find_by_host(host)
+    if name is None:
+        raise HTTPException(status_code=404, detail=f"No route for host '{host}'")
+    if not gateway_driver.remove_route(name):
+        raise HTTPException(status_code=500, detail="Gateway driver failed to remove route")
+    audit_log("route.removed", name=name, host=host)
+    await emit_event("route.removed", name=name, host=host)
+    return {"removed": host, "name": name}
+
+
+# ---- Policy ----------------------------------------------------------------
+
+@app.get("/policy")
+async def get_policy(authorized=Depends(require_admin)):
+    """Return the currently loaded policy."""
+    return {"policy": policy.policy, "policy_file": policy.policy_file}
+
+
+@app.post("/policy")
+async def apply_policy(fragment: Dict[str, Any], authorized=Depends(require_admin)):
+    """Merge a policy fragment into the on-disk policy and reload.
+
+    Only known top-level keys are accepted; unknown keys are rejected with
+    400 so typos don't silently no-op.
+    """
+    allowed = {"block_patterns", "auto_heal", "max_ttl", "require_admin_for_kill",
+               "audit_enabled", "gateway"}
+    unknown = set(fragment.keys()) - allowed
+    if unknown:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown policy keys: {sorted(unknown)}. Allowed: {sorted(allowed)}",
+        )
+
+    merged = dict(policy.policy)
+    merged.update(fragment)
+
+    # Atomic write: temp + rename.
+    tmp = POLICY_FILE + ".tmp"
+    try:
+        with open(tmp, "w") as f:
+            yaml.dump(merged, f)
+        os.replace(tmp, POLICY_FILE)
+    except Exception as e:
+        if os.path.exists(tmp):
+            os.unlink(tmp)
+        raise HTTPException(status_code=500, detail=f"Failed to write policy: {e}")
+
+    # Reload in place so existing references see the new values.
+    policy.policy = merged
+    audit_log("policy.applied", keys=sorted(fragment.keys()))
+    await emit_event("policy.applied", keys=sorted(fragment.keys()))
+    return {"policy": policy.policy}
+
 
 # Startup
 @app.on_event("startup")
 async def startup():
-    global start_time
+    global start_time, _main_loop
     start_time = time.time()
-    
+    _main_loop = asyncio.get_running_loop()
+
     # Initialize
     init_db()
-    
+
     # Auto-block policy ports
     with get_db() as conn:
         for port in FAMOUS_PORTS:
             if policy.is_port_blocked_by_policy(port):
                 if _bind_guard(port):
                     conn.execute("""
-                        INSERT OR IGNORE INTO leases 
+                        INSERT OR IGNORE INTO leases
                         (port, owner, state, ts, reason)
                         VALUES (?, ?, ?, ?, ?)
                     """, (port, "PAD_SYSTEM", "BLOCKED", int(time.time()), "Policy auto-block"))

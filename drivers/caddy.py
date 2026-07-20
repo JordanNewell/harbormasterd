@@ -19,13 +19,18 @@ import tempfile
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 import logging
-import threading
 from contextlib import contextmanager
 
 logger = logging.getLogger(__name__)
 
+
 class CaddyDriver:
-    """Caddy gateway driver with automatic HTTPS and DNS"""
+    """Caddy gateway driver with automatic HTTPS and DNS.
+
+    Implements the same surface as ``TraefikDriver`` (``upsert_route``,
+    ``remove_route``, ``reload``, ``routes`` dict, ``find_by_host``) so the
+    daemon can treat both drivers interchangeably via duck typing.
+    """
     
     def __init__(self, config: Dict[str, Any] = None):
         self.config = config or {}
@@ -400,6 +405,17 @@ class CaddyDriver:
             }
             for name, config in self.routes.items()
         ]
+
+    def find_by_host(self, host: str) -> Optional[str]:
+        """Return the route name whose host matches, or None.
+
+        Mirrors ``TraefikDriver.find_by_host`` so the daemon's
+        ``DELETE /routes/{host}`` endpoint works against either driver.
+        """
+        for name, data in self.routes.items():
+            if data.get("host") == host:
+                return name
+        return None
     
     def reload(self) -> bool:
         """Reload gateway configuration"""
