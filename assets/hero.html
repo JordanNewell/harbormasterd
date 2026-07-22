@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: #051419; }
+  html, body { width: 1280px; height: 400px; overflow: hidden; }
+  body {
+    background:
+      radial-gradient(ellipse at top right, rgba(34, 211, 238, 0.12), transparent 60%),
+      linear-gradient(135deg, #051419 0%, #0a1f25 60%, #020a0e 100%);
+    color: #e6edf3;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    display: flex;
+    align-items: center;
+    padding: 0 80px;
+    position: relative;
+  }
+  body::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(34, 211, 238, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(34, 211, 238, 0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+  }
+  .ports {
+    position: absolute;
+    right: 64px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.45;
+    font-family: Consolas, 'Cascadia Code', monospace;
+    font-size: 11.5px;
+    line-height: 1.7;
+    color: #7d8590;
+    text-align: right;
+    white-space: pre;
+    user-select: none;
+    border-left: 1px solid rgba(34, 211, 238, 0.2);
+    padding-left: 20px;
+  }
+  .ports .label { color: #7d8590; }
+  .ports .port { color: #22d3ee; font-weight: bold; }
+  .ports .svc { color: #b1bac4; }
+  .ports .ok { color: #39d353; }
+  .ports .arrow { color: #22d3ee; }
+  .ports .url { color: #22d3ee; font-weight: bold; }
+  .ports .header { color: #58a6ff; }
+  .content {
+    position: relative;
+    z-index: 2;
+    max-width: 740px;
+  }
+  .logo-row {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 22px;
+  }
+  .logo {
+    width: 56px;
+    height: 64px;
+    filter: drop-shadow(0 0 12px rgba(34, 211, 238, 0.5));
+  }
+  .eyebrow {
+    font-family: Consolas, 'Cascadia Code', monospace;
+    color: #22d3ee;
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  h1 {
+    font-size: 68px;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1;
+    margin-bottom: 14px;
+    background: linear-gradient(180deg, #ffffff 0%, #b1bac4 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .tagline {
+    color: #b1bac4;
+    font-size: 19px;
+    line-height: 1.5;
+    margin-bottom: 30px;
+    max-width: 600px;
+  }
+  .chips {
+    display: flex;
+    gap: 10px;
+  }
+  .chip {
+    font-family: Consolas, 'Cascadia Code', monospace;
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 7px 14px;
+    border: 1px solid rgba(34, 211, 238, 0.4);
+    border-radius: 4px;
+    background: rgba(34, 211, 238, 0.07);
+    color: #e6edf3;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 0.05em;
+  }
+  .chip::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #22d3ee;
+    box-shadow: 0 0 6px #22d3ee;
+  }
+</style>
+</head>
+<body>
+  <div class="ports"><span class="header">PORT  SERVICE        STATE</span>
+
+<span class="port">3000</span>  <span class="svc">myapp</span>          <span class="ok">ready ✓</span>
+<span class="port">3001</span>  <span class="svc">api</span>            <span class="ok">ready ✓</span>
+<span class="port">5432</span>  <span class="svc">postgres</span>       <span class="ok">ready ✓</span>
+<span class="port">8080</span>  <span class="svc">gateway</span>         <span class="ok">ready ✓</span>
+<span class="port">8443</span>  <span class="svc">https-gw</span>        <span class="ok">ready ✓</span>
+
+<span class="arrow">↓</span> <span class="label">auto https</span>
+<span class="url">myapp.pa.local</span></div>
+  <div class="content">
+    <div class="logo-row">
+      <svg class="logo" viewBox="0 0 56 64" fill="none">
+        <path d="M28 4 L33 16 L23 16 Z" fill="#22d3ee"/>
+        <rect x="24" y="16" width="8" height="6" fill="#22d3ee"/>
+        <path d="M16 22 L40 22 L42 38 L14 38 Z" fill="rgba(34, 211, 238, 0.25)" stroke="#22d3ee" stroke-width="2"/>
+        <path d="M14 38 L42 38 L46 58 L10 58 Z" fill="rgba(34, 211, 238, 0.15)" stroke="#22d3ee" stroke-width="2"/>
+        <path d="M28 64 L28 58" stroke="#22d3ee" stroke-width="2"/>
+        <path d="M0 50 L8 48 M56 50 L48 48" stroke="#22d3ee" stroke-width="1.5" opacity="0.5"/>
+        <circle cx="28" cy="10" r="3" fill="#fef3c7"/>
+      </svg>
+      <div class="eyebrow">Open-source · MIT · v1.1.0</div>
+    </div>
+    <h1>Harbormasterd</h1>
+    <p class="tagline">Zero-thinking port management with automatic HTTPS and DNS for local development.</p>
+    <div class="chips">
+      <span class="chip">HTTPS</span>
+      <span class="chip">DNS</span>
+      <span class="chip">Port mgmt</span>
+    </div>
+  </div>
+</body>
+</html>

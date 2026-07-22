@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: #010409; }
+  html, body { width: 900px; height: 540px; overflow: hidden; }
+  body {
+    background: #010409;
+    font-family: Consolas, 'Cascadia Code', 'JetBrains Mono', monospace;
+    padding: 24px;
+  }
+  .terminal {
+    width: 852px;
+    height: 492px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow:
+      0 30px 60px rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgba(255, 255, 255, 0.02);
+  }
+  .titlebar {
+    background: linear-gradient(180deg, #161b22 0%, #0d1117 100%);
+    border-bottom: 1px solid #30363d;
+    padding: 11px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot.red { background: #ff5f56; }
+  .dot.yellow { background: #ffbd2e; }
+  .dot.green { background: #27c93f; }
+  .title {
+    color: #7d8590;
+    font-size: 12.5px;
+    margin-left: 14px;
+    font-family: -apple-system, system-ui, sans-serif;
+  }
+  .body {
+    padding: 22px 26px 24px;
+    flex: 1;
+    overflow: hidden;
+    font-size: 13.5px;
+    line-height: 1.7;
+  }
+  .prompt { color: #39d353; }
+  .path { color: #7d8590; }
+  .cmd { color: #79c0ff; }
+  .flag { color: #d2a8ff; }
+  .arg { color: #ffa657; }
+  .muted { color: #7d8590; }
+  .ok { color: #39d353; font-weight: bold; }
+  .warn { color: #d29922; font-weight: bold; }
+  .accent { color: #22d3ee; font-weight: bold; }
+  .header { color: #58a6ff; font-weight: bold; }
+  .url { color: #22d3ee; }
+  .divider { color: #21262d; }
+  .gap { height: 8px; }
+  .gap-sm { height: 4px; }
+</style>
+</head>
+<body>
+<div class="terminal">
+  <div class="titlebar">
+    <div class="dot red"></div>
+    <div class="dot yellow"></div>
+    <div class="dot green"></div>
+    <div class="title">harbormasterd — myapp</div>
+  </div>
+  <div class="body">
+    <div><span class="prompt">~/projects/myapp</span> <span class="cmd">pa start myapp --https</span></div>
+    <div class="gap"></div>
+    <div><span class="header">harbormasterd v1.1.0</span>  <span class="muted">allocating ports + issuing certificate</span></div>
+    <div class="gap"></div>
+    <div><span class="ok">✓</span>  <span class="muted">scan free ports in range 3000-9999</span></div>
+    <div>   <span class="accent">port 3000</span>  <span class="muted">→</span>  <span class="arg">myapp</span></div>
+    <div>   <span class="accent">port 3001</span>  <span class="muted">→</span>  <span class="arg">api</span></div>
+    <div>   <span class="accent">port 5432</span>  <span class="muted">→</span>  <span class="arg">postgres</span></div>
+    <div class="gap"></div>
+    <div><span class="ok">✓</span>  <span class="muted">mkcert CA found</span>  <span class="ok">→</span>  <span class="muted">issuing cert for *.pa.local</span></div>
+    <div>   <span class="muted">myapp.pa.local.crt</span>  <span class="ok">signed ✓</span></div>
+    <div>   <span class="muted">myapp.pa.local.key</span>   <span class="ok">generated ✓</span></div>
+    <div class="gap"></div>
+    <div><span class="ok">✓</span>  <span class="muted">DNS resolver listening on</span>  <span class="accent">127.0.0.1:5300</span></div>
+    <div>   <span class="muted">*.pa.local</span>  <span class="muted">→</span>  <span class="accent">127.0.0.1</span></div>
+    <div class="gap"></div>
+    <div><span class="warn">!</span>  <span class="muted">port 8080 in use by</span>  <span style="color:#f85149">old-gateway</span>  <span class="muted">(pid 4821)</span></div>
+    <div>   <span class="muted">reallocating gateway →</span>  <span class="accent">port 8081</span></div>
+    <div class="gap"></div>
+    <div class="divider">────────────────────────────────────────────────────────────</div>
+    <div class="gap-sm"></div>
+    <div><span class="muted">Ready:</span>  <span class="url">https://myapp.pa.local</span></div>
+    <div><span class="muted">Run:</span>    <span class="cmd">pa open myapp</span>  <span class="muted">or</span>  <span class="cmd">pa top</span></div>
+  </div>
+</div>
+</body>
+</html>
