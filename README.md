@@ -417,7 +417,7 @@ pa selftest --comprehensive
 
 ## 📋 License
 
-MIT License - see [LICENSE](LICENSE) for details.
+[MIT](LICENSE) © Jordan Newell
 
 ---
 
