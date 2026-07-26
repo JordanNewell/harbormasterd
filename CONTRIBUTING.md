@@ -54,16 +54,16 @@ python -m pytest --cov=pa --cov=pad --cov-report=term # with coverage
 CI runs `test_token_store.py` + `test_pad_endpoints.py` only (see
 `.github/workflows/ci.yml`) — these are the gates. The integration suite
 requires a running daemon and an admin token, so it's manual / opt-in via
-`pa selftest --comprehensive`.
+`pa-platform selftest --comprehensive`.
 
 ### Built-in self-test
 
 The platform ships its own self-test command:
 
 ```bash
-pa selftest                  # 8 core checks, no daemon admin token needed
-pa selftest --comprehensive  # runs the full TestHarness
-pa selftest --json           # JSON output for CI / automation
+pa-platform selftest                  # 8 core checks, no daemon admin token needed
+pa-platform selftest --comprehensive  # runs the full TestHarness
+pa-platform selftest --json           # JSON output for CI / automation
 ```
 
 When fixing a bug, add a regression under `test_token_store.py` or
@@ -106,7 +106,7 @@ Before requesting review:
 - [ ] `black .` produces no diff
 - [ ] `mypy .` is clean (or warnings are pre-existing and noted)
 - [ ] `python -m pytest test_token_store.py test_pad_endpoints.py -v` passes
-- [ ] `pa selftest` passes locally (the 8-check quick mode)
+- [ ] `pa-platform selftest` passes locally (the 8-check quick mode)
 - [ ] `python -m build` produces a working wheel
 - [ ] No new runtime dependencies in `pyproject.toml` without an issue
 - [ ] `README.md` / `INSTALL.md` updated if user-visible behavior changed
@@ -118,7 +118,7 @@ job uses the `PYPI_API_TOKEN` repository secret (exact name). **Don't
 push tags as part of a PR** — a maintainer cuts the release.
 
 To bump the version, edit `pyproject.toml`'s `version = "..."` line and
-add a CHANGELOG note. The CI build picks it up automatically.
+if/when a CHANGELOG.md is introduced, note the change there. The CI build picks it up automatically.
 
 ## Filing issues
 
