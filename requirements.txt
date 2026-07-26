@@ -9,7 +9,7 @@ requests>=2.31.0
 
 # CLI and user interface
 click>=8.1.0
-rich>=13.6.0
+rich>=15.0.0
 pyyaml>=6.0.1
 keyring>=24.2.0
 
