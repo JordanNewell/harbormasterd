@@ -34,7 +34,8 @@ paste sanitized log output here
 
 ## Environment
 
-- **mkcert installed:** yes / no (output of `mkcert -version` if installed)n- **Cert store path / OS-specific cert location:** (e.g., `/etc/ssl/certs/ca-certificates.crt` on Linux, `/usr/local/share/ca-certificates` on macOS via mkcert, Windows cert store path)
+- **mkcert installed:** yes / no (output of `mkcert -version` if installed)
+- **Cert store path / OS-specific cert location:** (e.g., `/etc/ssl/certs/ca-certificates.crt` on Linux, `/usr/local/share/ca-certificates` on macOS via mkcert, Windows cert store path)
 - **Install source:** (PyPI / git checkout / distribution package)
 
 ## Logs / screenshots
