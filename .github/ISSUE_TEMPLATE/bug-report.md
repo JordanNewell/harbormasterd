@@ -34,10 +34,7 @@ paste sanitized log output here
 
 ## Environment
 
-- **harbormasterd version:** output of `harbormasterd --version` (or `pip show harbormasterd`)
-- **Python version:** output of `python --version`
-- **OS:** (Ubuntu 24.04 / macOS 14 / Windows 11)
-- **mkcert installed:** yes / no (output of `mkcert -version` if installed)
+- **mkcert installed:** yes / no (output of `mkcert -version` if installed)n- **Cert store path / OS-specific cert location:** (e.g., `/etc/ssl/certs/ca-certificates.crt` on Linux, `/usr/local/share/ca-certificates` on macOS via mkcert, Windows cert store path)
 - **Install source:** (PyPI / git checkout / distribution package)
 
 ## Logs / screenshots
