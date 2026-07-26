@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.1.0] - 2026-07-20
+## [1.1.0] — 2026-07-20
 
 ### Added
 
@@ -27,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Semver minor bump per the new endpoint surface.
 
-## [1.0.1] - 2026-07-19
+## [1.0.1] — 2026-07-19
 
 Initial PyPI release as `harbormasterd` (renamed from `port-authority`
 due to a PyPI name collision with the existing `portauthority`
