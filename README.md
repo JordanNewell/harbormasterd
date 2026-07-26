@@ -5,7 +5,7 @@
   <a href="https://pypi.org/project/harbormasterd/"><img src="https://img.shields.io/pypi/pyversions/harbormasterd?logo=python&logoColor=white" alt="Python versions"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/pypi/l/harbormasterd?color=blue" alt="License: MIT"></a>
   <a href="https://github.com/JordanNewell/harbormasterd/actions/workflows/ci.yml"><img src="https://github.com/JordanNewell/harbormasterd/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/JordanNewell/harbormasterd/releases"><img src="https://img.shields.io/github/v/release/JordanNewell/harbormasterd?display_name=tag&include_prereleases" alt="latest release"></a>
+  <a href="https://github.com/JordanNewell/harbormasterd/releases"><img src="https://img.shields.io/badge/release-1.1.0-blue
 </p>
 
 Harbormasterd transforms local development by providing intelligent port management, automatic HTTPS certificates, and seamless DNS resolution. No more port conflicts, manual certificate setup, or remembering localhost URLs.
