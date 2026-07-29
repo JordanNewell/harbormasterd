@@ -544,16 +544,16 @@
     position: relative;
     z-index: 1;
   }
-  .footer-logo {
-    width: 72px;
-    height: 72px;
-    margin: 0 auto 16px;
+  .hero-logo {
+    width: 88px;
+    height: 88px;
+    margin: 0 auto 28px;
     display: block;
-    filter: drop-shadow(0 0 16px rgba(0, 255, 0, 0.45));
+    filter: drop-shadow(0 0 20px rgba(0, 255, 0, 0.45));
     transition: filter 0.3s ease;
   }
-  .footer-logo:hover {
-    filter: drop-shadow(0 0 28px rgba(0, 255, 0, 0.7));
+  .hero-logo:hover {
+    filter: drop-shadow(0 0 36px rgba(0, 255, 0, 0.75));
   }
   .footer-links {
     display: flex;
@@ -657,6 +657,7 @@
 
 <!-- HERO -->
 <section class="hero wrap">
+  <img src="assets/newell-logo.png" alt="Newell monogram" class="hero-logo">
   <div class="badge">
     <span class="badge-dot"></span>
     <span>v1.1.0 — live on pypi</span>
@@ -759,7 +760,6 @@
 
 <!-- FOOTER -->
 <footer class="wrap">
-  <img src="assets/newell-logo.png" alt="Newell monogram" class="footer-logo">
   <nav class="footer-links">
     <a href="https://github.com/JordanNewell/harbormasterd">github</a>
     <a href="https://pypi.org/project/harbormasterd/">pypi</a>
