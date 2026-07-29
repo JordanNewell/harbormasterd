@@ -107,6 +107,10 @@
     padding: 96px 0 128px;
     border-bottom: 1px solid var(--border);
   }
+  .hero-intro {
+    max-width: 900px;
+    margin-bottom: 64px;
+  }
   .hero-grid {
     display: grid;
     grid-template-columns: 7fr 5fr;
@@ -127,13 +131,21 @@
   .wordmark {
     font-family: var(--font-display);
     font-weight: 700;
-    font-size: clamp(48px, 7vw, 96px);
-    line-height: 0.95;
-    letter-spacing: -0.03em;
+    font-size: clamp(48px, 9vw, 128px);
+    line-height: 0.9;
+    letter-spacing: -0.045em;
     color: var(--text);
     margin-bottom: 32px;
     text-transform: uppercase;
-    word-break: break-word;
+    white-space: nowrap;
+    overflow: visible;
+  }
+  @media (max-width: 600px) {
+    .wordmark {
+      font-size: clamp(40px, 11vw, 64px);
+      letter-spacing: -0.03em;
+      white-space: normal;
+    }
   }
   .tagline {
     font-family: var(--font-display);
@@ -535,16 +547,19 @@
 
 <!-- ─── HERO ─── -->
 <section class="hero wrap">
+  <div class="hero-intro">
+    <div class="eyebrow">// 001 · product</div>
+    <h1 class="wordmark">harbormasterd</h1>
+    <p class="tagline">
+      Zero-thinking port management for local development.
+      <strong>Automatic ports, <code style="font-family:var(--font-mono);color:var(--primary);font-size:0.92em">*.pa.local</code> DNS, zero-config HTTPS</strong> —
+      never see <em style="font-style:normal;color:var(--primary)">"port already in use"</em> again.
+    </p>
+  </div>
+
   <div class="hero-grid">
 
     <div class="hero-content">
-      <div class="eyebrow">// 001 · product</div>
-      <h1 class="wordmark">harbormasterd</h1>
-      <p class="tagline">
-        Zero-thinking port management for local development.
-        <strong>Automatic ports, <code style="font-family:var(--font-mono);color:var(--primary);font-size:0.92em">*.pa.local</code> DNS, zero-config HTTPS</strong> —
-        never see <em style="font-style:normal;color:var(--primary)">"port already in use"</em> again.
-      </p>
 
       <div class="install-row">
         <div class="install-cmd">
