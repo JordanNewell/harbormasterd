@@ -544,13 +544,16 @@
     position: relative;
     z-index: 1;
   }
-  .monogram {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 22px;
-    color: var(--green);
-    margin-bottom: 16px;
-    letter-spacing: -0.02em;
+  .footer-logo {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 16px;
+    display: block;
+    filter: drop-shadow(0 0 16px rgba(0, 255, 0, 0.45));
+    transition: filter 0.3s ease;
+  }
+  .footer-logo:hover {
+    filter: drop-shadow(0 0 28px rgba(0, 255, 0, 0.7));
   }
   .footer-links {
     display: flex;
@@ -756,7 +759,7 @@
 
 <!-- FOOTER -->
 <footer class="wrap">
-  <div class="monogram">— JN</div>
+  <img src="assets/newell-logo.png" alt="Newell monogram" class="footer-logo">
   <nav class="footer-links">
     <a href="https://github.com/JordanNewell/harbormasterd">github</a>
     <a href="https://pypi.org/project/harbormasterd/">pypi</a>
