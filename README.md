@@ -437,3 +437,10 @@ pa selftest --comprehensive && echo "🚢 Welcome aboard the Harbormasterd platf
 *Developed with ❤️ by the Harbormasterd maintainers*  
 *Platform tested on Windows 11, macOS Ventura, Ubuntu 22.04*  
 *Comprehensive CI/CD pipeline validates every commit across 12 platform combinations*
+
+
+<p align="right">
+  <a href="https://jordannewell.com" title="Built by Jordan Newell">
+    <img src="assets/newell-badge.svg" alt="Built by Jordan Newell" width="48" height="48">
+  </a>
+</p>
