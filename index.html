@@ -161,6 +161,46 @@
     font-weight: 500;
   }
 
+  .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 32px;
+  }
+  .badge {
+    display: inline-flex;
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    overflow: hidden;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1;
+    text-decoration: none;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+  .badge:hover {
+    border-color: var(--primary);
+    transform: translateY(-1px);
+  }
+  .badge-key {
+    background: var(--surface);
+    color: var(--muted);
+    padding: 6px 8px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .badge-val {
+    background: var(--primary);
+    color: var(--bg);
+    padding: 6px 8px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .badge-neutral .badge-val {
+    background: var(--text);
+    color: var(--bg);
+  }
+
   .install-row {
     display: flex;
     align-items: stretch;
@@ -273,14 +313,13 @@
   .lighthouse-frame {
     border-left: 1px solid var(--border);
     padding-left: 48px;
-    min-height: 480px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    gap: 32px;
   }
   .lighthouse-svg {
     width: 100%;
-    max-width: 280px;
+    max-width: 160px;
     height: auto;
     margin: 0 auto;
     display: block;
@@ -560,6 +599,29 @@
   <div class="hero-grid">
 
     <div class="hero-content">
+
+      <div class="badges">
+        <a class="badge" href="https://pypi.org/project/harbormasterd/">
+          <span class="badge-key">pypi</span>
+          <span class="badge-val">v1.1.0</span>
+        </a>
+        <a class="badge" href="https://pypi.org/project/harbormasterd/">
+          <span class="badge-key">python</span>
+          <span class="badge-val">3.10+</span>
+        </a>
+        <a class="badge badge-neutral" href="https://github.com/JordanNewell/harbormasterd/blob/master/LICENSE">
+          <span class="badge-key">license</span>
+          <span class="badge-val">MIT</span>
+        </a>
+        <a class="badge" href="https://github.com/JordanNewell/harbormasterd/actions/workflows/ci.yml">
+          <span class="badge-key">ci</span>
+          <span class="badge-val">passing</span>
+        </a>
+        <a class="badge badge-neutral" href="https://github.com/JordanNewell/harbormasterd/releases">
+          <span class="badge-key">release</span>
+          <span class="badge-val">v1.1.0</span>
+        </a>
+      </div>
 
       <div class="install-row">
         <div class="install-cmd">
