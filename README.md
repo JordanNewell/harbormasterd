@@ -441,6 +441,6 @@ pa selftest --comprehensive && echo "🚢 Welcome aboard the Harbormasterd platf
 
 <p align="right">
   <a href="https://jordannewell.com" title="Built by Jordan Newell">
-    <img src="assets/newell-badge.svg" alt="Built by Jordan Newell" width="48" height="48">
+    <img src="assets/newell-badge.png" alt="Built by Jordan Newell" width="48" height="48">
   </a>
 </p>
