@@ -115,14 +115,9 @@
     max-width: 900px;
     margin-bottom: 64px;
   }
-  .hero-grid {
-    display: grid;
-    grid-template-columns: 7fr 5fr;
-    gap: 64px;
-    align-items: start;
-  }
   .hero-content {
     min-width: 0;
+    max-width: 720px;
   }
   .eyebrow {
     font-family: var(--font-mono);
@@ -315,30 +310,17 @@
 
   /* lighthouse elevation (right column) */
   .lighthouse-frame {
-    border-left: 1px solid var(--border);
-    padding-left: 48px;
+    display: none;
+  }
+  .product-lockup {
     display: flex;
-    flex-direction: column;
-    gap: 32px;
+    align-items: center;
+    gap: 12px;
   }
-  .lighthouse-svg {
-    width: 100%;
-    max-width: 220px;
-    height: auto;
-    margin: 0 auto;
+  .product-mark {
+    width: 18px;
+    height: 24px;
     display: block;
-  }
-  .lighthouse-caption {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    margin-top: 48px;
-    text-align: center;
-  }
-  .lighthouse-caption .num {
-    color: var(--text);
   }
 
   /* ─── section primitives ─── */
@@ -546,16 +528,6 @@
     .wrap { padding: 0 20px; }
     .topbar-inner { padding: 16px 20px; }
     .hero { padding: 48px 0 64px; }
-    .hero-grid { grid-template-columns: 1fr; gap: 48px; }
-    .lighthouse-frame {
-      border-left: none;
-      border-top: 1px solid var(--border);
-      padding-left: 0;
-      padding-top: 32px;
-      min-height: auto;
-    }
-    .lighthouse-svg { max-width: 200px; }
-    .lighthouse-caption { margin-top: 24px; }
     .feature-grid { grid-template-columns: 1fr; }
     .feature-card.large { padding: 32px; min-height: auto; }
     .quickstart-grid { grid-template-columns: 1fr; gap: 32px; }
@@ -582,8 +554,23 @@
       </svg>
       <span class="brand-name">NEWELL</span>
     </div>
-    <div class="version-chip">
-      <span class="dot"></span>v1.1.0 · pypi
+    <div class="product-lockup">
+      <svg class="product-mark" viewBox="0 0 24 32" xmlns="http://www.w3.org/2000/svg" fill="none"
+           stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+           role="img" aria-label="harbormasterd">
+        <line x1="12" y1="2" x2="12" y2="5"/>
+        <path d="M 8 8 Q 12 4 16 8"/>
+        <path d="M 6 9 L 12 4 L 18 9"/>
+        <rect x="8" y="9" width="8" height="5"/>
+        <line x1="10.66" y1="9" x2="10.66" y2="14"/>
+        <line x1="13.34" y1="9" x2="13.34" y2="14"/>
+        <line x1="6" y1="15" x2="18" y2="15"/>
+        <line x1="6" y1="16.5" x2="18" y2="16.5"/>
+        <path d="M 8 16.5 L 5 30 L 19 30 L 16 16.5 Z"/>
+      </svg>
+      <div class="version-chip">
+        <span class="dot"></span>v1.1.0 · pypi
+      </div>
     </div>
   </div>
 </div>
@@ -600,9 +587,7 @@
     </p>
   </div>
 
-  <div class="hero-grid">
-
-    <div class="hero-content">
+  <div class="hero-content">
 
       <div class="badges">
         <a class="badge" href="https://pypi.org/project/harbormasterd/">
@@ -656,60 +641,6 @@
       </div>
     </div>
 
-    <aside class="lighthouse-frame">
-      <!-- Architectural elevation — monoline, no decoration, no animation -->
-      <svg class="lighthouse-svg" viewBox="0 0 200 480" xmlns="http://www.w3.org/2000/svg" fill="none"
-           stroke="#FFFFFF" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"
-           role="img" aria-label="Lighthouse elevation drawing">
-        <!-- dimension line, left -->
-        <line x1="22" y1="60" x2="22" y2="444" stroke-width="0.8" opacity="0.4"/>
-        <line x1="18" y1="60" x2="26" y2="60" stroke-width="0.8" opacity="0.4"/>
-        <line x1="18" y1="444" x2="26" y2="444" stroke-width="0.8" opacity="0.4"/>
-        <!-- dimension line, right -->
-        <line x1="178" y1="60" x2="178" y2="444" stroke-width="0.8" opacity="0.4"/>
-        <line x1="174" y1="60" x2="182" y2="60" stroke-width="0.8" opacity="0.4"/>
-        <line x1="174" y1="444" x2="182" y2="444" stroke-width="0.8" opacity="0.4"/>
-        <!-- lightning rod -->
-        <line x1="100" y1="20" x2="100" y2="60"/>
-        <!-- weather vane -->
-        <line x1="90" y1="40" x2="110" y2="40"/>
-        <!-- dome -->
-        <path d="M 78 90 Q 100 60 122 90"/>
-        <!-- roof -->
-        <path d="M 70 95 L 100 60 L 130 95"/>
-        <!-- lamp room -->
-        <rect x="76" y="95" width="48" height="40"/>
-        <line x1="88" y1="95" x2="88" y2="135"/>
-        <line x1="100" y1="95" x2="100" y2="135"/>
-        <line x1="112" y1="95" x2="112" y2="135"/>
-        <!-- gallery rail -->
-        <line x1="68" y1="140" x2="132" y2="140"/>
-        <line x1="68" y1="140" x2="68" y2="152"/>
-        <line x1="84" y1="140" x2="84" y2="152"/>
-        <line x1="100" y1="140" x2="100" y2="152"/>
-        <line x1="116" y1="140" x2="116" y2="152"/>
-        <line x1="132" y1="140" x2="132" y2="152"/>
-        <line x1="68" y1="152" x2="132" y2="152"/>
-        <!-- tower body tapered -->
-        <path d="M 76 152 L 62 420 L 138 420 L 124 152 Z"/>
-        <!-- windows -->
-        <rect x="94" y="200" width="12" height="20"/>
-        <rect x="94" y="260" width="12" height="20"/>
-        <rect x="94" y="320" width="12" height="20"/>
-        <rect x="94" y="380" width="12" height="20"/>
-        <!-- architectural band -->
-        <line x1="68" y1="240" x2="132" y2="240"/>
-        <!-- foundation -->
-        <rect x="52" y="420" width="96" height="24"/>
-        <!-- ground line -->
-        <line x1="10" y1="444" x2="190" y2="444"/>
-      </svg>
-      <div class="lighthouse-caption">
-        fig. <span class="num">001</span> · harbor entry · 1:1
-      </div>
-    </aside>
-
-  </div>
 </section>
 
 <!-- ─── FEATURES ─── -->
