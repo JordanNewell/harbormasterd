@@ -9,6 +9,10 @@ recent tag for production use.
 
 Email **security@jordannewell.com** with:
 
+> **GPG fingerprint:** `67567DC5E7C5353F85F2AF0DAC05D3F3E0EFA32A`
+>
+> Verify this fingerprint before encrypting your report.
+
 - A description of the issue and its impact
 - Reproduction steps (a minimal example is ideal)
 - Affected version — run `harbormasterd --version`
