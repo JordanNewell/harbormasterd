@@ -1,0 +1,39 @@
+# Normalize line endings: LF in repo, LF in working copy.
+# Ends the "LF will be replaced by CRLF" warnings.
+* text=auto eol=lf
+
+# Explicit text types
+*.md   text eol=lf
+*.json text eol=lf
+*.js   text eol=lf
+*.ts   text eol=lf
+*.tsx  text eol=lf
+*.jsx  text eol=lf
+*.css  text eol=lf
+*.html text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.toml text eol=lf
+*.sh   text eol=lf
+*.py   text eol=lf
+*.go   text eol=lf
+*.rs   text eol=lf
+*.txt  text eol=lf
+
+# Binaries — never touch
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.webp binary
+*.svg  text eol=lf
+*.ico  binary
+*.pdf  binary
+*.mp4  binary
+*.mov  binary
+*.mp3  binary
+*.wav  binary
+*.zip  binary
+*.gz   binary
+*.7z   binary
+
