@@ -7,14 +7,14 @@ name = "harbormasterd"
 version = "1.1.0"
 description = "Zero-conflict port management with automatic HTTPS and DNS for local development"
 readme = "README.md"
-license = {text = "MIT"}
+license = {text = "BUSL-1.1"}
 authors = [
     {name = "Jordan Newell", email = "58616955+JordanNewell@users.noreply.github.com"}
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
+    "License :: Other/Proprietary License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
