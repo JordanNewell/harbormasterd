@@ -3,7 +3,7 @@
   <br>
   <a href="https://pypi.org/project/harbormasterd/"><img src="https://img.shields.io/pypi/v/harbormasterd?logo=pypi&logoColor=white" alt="PyPI version"></a>
   <a href="https://pypi.org/project/harbormasterd/"><img src="https://img.shields.io/pypi/pyversions/harbormasterd?logo=python&logoColor=white" alt="Python versions"></a>
-  <a href="./LICENSE"><img src="https://img.shields.io/pypi/l/harbormasterd?color=blue" alt="License: MIT"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/pypi/l/harbormasterd?color=blue" alt="License: BUSL-1.1"></a>
   <a href="https://github.com/JordanNewell/harbormasterd/actions/workflows/ci.yml"><img src="https://github.com/JordanNewell/harbormasterd/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://github.com/JordanNewell/harbormasterd/releases"><img src="https://img.shields.io/badge/release-1.1.0-blue
 </p>
@@ -417,7 +417,7 @@ pa selftest --comprehensive
 
 ## 📋 License
 
-[MIT](LICENSE) © Jordan Newell
+[BUSL-1.1](LICENSE) — source-available; free for noncommercial use, converts to MIT on 2030-10-12.
 
 ---
 

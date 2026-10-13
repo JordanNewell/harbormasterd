@@ -140,4 +140,4 @@ for the private reporting path.
 ## License
 
 By contributing, you agree your contributions are licensed under the
-[MIT license](LICENSE).
+[BUSL-1.1 license](LICENSE).
