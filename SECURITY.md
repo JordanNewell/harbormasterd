@@ -1,51 +1,61 @@
 # Security Policy
 
-## Supported versions
+## Reporting a Vulnerability
 
-Only the latest minor release receives security updates. Pin to the most
-recent tag for production use.
+**Do not open a public GitHub issue for a security vulnerability.**
 
-## Reporting a vulnerability
+Report vulnerabilities privately to **<security@jordannewell.com>**.
+(Placeholder address — Jordan will replace with a dedicated security inbox.)
 
-Email **security@jordannewell.com** with:
-
-- A description of the issue and its impact
-- Reproduction steps (a minimal example is ideal)
-- Affected version — run `harbormasterd --version`
-
-**Do not open a public GitHub issue** for security reports.
-
-If you have a PGP key, encrypt your report. GPG fingerprint of the project's
-reporting key:
+If you have a PGP key, encrypt the report. The fingerprint of the project's
+reporting key will be published here once Jordan generates it:
 
 ```
-67567DC5E7C5353F85F2AF0DAC05D3F3E0EFA32A
+PGP fingerprint:  TBD (to be published)
+PGP public key:   TBD (to be published)
 ```
 
-## Response timeline
+Until the PGP key is published, plaintext email is fine — but please prefer
+it over GitHub issues either way.
 
-- **Acknowledgment:** within 72 hours
-- **Initial assessment:** within 5 business days
-- **Fix or mitigation:** target 30 days for high-severity issues
+Please include, where possible:
 
-Please refrain from public disclosure until a fix has been published, to
-protect downstream users. Reporters will be credited in the release notes
-unless they prefer otherwise.
+- A description of the issue and its impact.
+- The smallest reproducer you can manage (a failing test is ideal).
+- Affected versions (or the commit SHA you tested against).
+- Any mitigations you've already tried.
+
+## Response SLA
+
+- **Acknowledgement:** within **48 hours** (typically same business day).
+- **Initial assessment + severity rating:** within **5 business days**.
+- **Fix or mitigation timeline** depends on severity:
+  - *Critical* (RCE, key compromise, auth bypass): patch or mitigation
+    within 7 days of confirmation; coordinated disclosure afterwards.
+  - *High*: patch within 30 days.
+  - *Medium / Low:* next minor release.
+
+We will keep you informed at each step and credit you in the release notes
+unless you'd prefer to remain anonymous.
 
 ## Scope
 
 **In scope:**
 
-- The daemon (`harbormasterd` and its subcommands)
-- Certificate management (mkcert integration)
-- DNS handling
-
-harbormasterd manages local TLS certificates, so any report about
-certificate handling, key storage, or privilege escalation is treated as
-high-priority.
+- The `harbormasterd` daemon and its container orchestration logic.
+- The DNS resolver (`dns_resolver.py`) and driver layer.
+- Anything that could let an untrusted workload escape its sandbox or escalate privileges.
 
 **Out of scope:**
 
-- mkcert itself — report upstream
-- The local DNS server implementation
-- OS-level networking
+- Vulnerabilities in third-party dependencies. Report those upstream.
+- Attacks requiring a compromised maintainer, a compromised signing key, or
+  physical access to the reporter's machine.
+- Reports from automated scanners without a working reproducer.
+
+## Disclosure policy
+
+We follow **coordinated disclosure**. Once a fix is available we'll publish a
+GitHub Security Advisory, request a CVE if appropriate, cut a patch release,
+and credit the reporter in the changelog. We will not publish details of
+unpatched critical issues.
