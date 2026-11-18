@@ -195,7 +195,7 @@ class TraefikDriver(GatewayDriver):
             logger.info(f"Updated Traefik route: {_log_safe(name)} ({_log_safe(host)} -> {_log_safe(target)})")
             return True
         except Exception as e:
-            logger.error(f"Failed to upsert route {name}: {e}")
+            logger.error(f"Failed to upsert route {_log_safe(name)}: {_log_safe(e)}")
             return False
 
     def remove_route(self, name: str) -> bool:
