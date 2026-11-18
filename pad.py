@@ -42,6 +42,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger("PAD")
 
+
+def _log_safe(value: object) -> str:
+    """Neutralize control characters so request-derived data can't forge log lines."""
+    return str(value).replace("\n", "\\n").replace("\r", "\\r")
+
+
 app = FastAPI(
     title="Harbormasterd",
     description="Zero-config local development port management",
@@ -186,7 +192,7 @@ class TraefikDriver(GatewayDriver):
             }
             self._write_config()
             self._persist_routes()
-            logger.info(f"Updated Traefik route: {name} ({host} -> {target})")
+            logger.info(f"Updated Traefik route: {_log_safe(name)} ({_log_safe(host)} -> {_log_safe(target)})")
             return True
         except Exception as e:
             logger.error(f"Failed to upsert route {name}: {e}")
@@ -462,7 +468,7 @@ def _bind_guard(port: int) -> bool:
         socks.append(s)
         success = True
     except OSError as e:
-        logger.warning(f"Failed to guard IPv4 port {port}: {e}")
+        logger.warning(f"Failed to guard IPv4 port {_log_safe(port)}: {_log_safe(e)}")
     
     # Try IPv6
     try:
@@ -473,11 +479,11 @@ def _bind_guard(port: int) -> bool:
         socks.append(s)
         success = True
     except OSError as e:
-        logger.warning(f"Failed to guard IPv6 port {port}: {e}")
+        logger.warning(f"Failed to guard IPv6 port {_log_safe(port)}: {_log_safe(e)}")
     
     if success:
         _guard_sockets[port] = socks
-        logger.info(f"Guarded port {port} with {len(socks)} sockets")
+        logger.info(f"Guarded port {_log_safe(port)} with {len(socks)} sockets")
     
     return success
 
@@ -487,7 +493,7 @@ def _release_guard(port: int):
         try:
             s.close()
         except Exception as e:
-            logger.warning(f"Error closing guard socket for port {port}: {e}")
+            logger.warning(f"Error closing guard socket for port {_log_safe(port)}: {_log_safe(e)}")
 
 def port_pid_map() -> Dict[int, Set[int]]:
     """Build a map of listening ports to PIDs"""
@@ -738,7 +744,7 @@ async def spawn_process(req: SpawnRequest, authorized=Depends(require_admin)):
             audit_log("process.spawned", port=port, owner=req.name, pid=proc.pid, cmd=req.cmd)
             await emit_event("lease.bound", port=port, owner=req.name, pid=proc.pid, url=url)
             
-            logger.info(f"Spawned '{' '.join(req.cmd)}' for {req.name} on port {port} (PID: {proc.pid})")
+            logger.info(f"Spawned '{_log_safe(' '.join(req.cmd))}' for {_log_safe(req.name)} on port {_log_safe(port)} (PID: {proc.pid})")
             
             return LeaseResponse(
                 port=port,
@@ -801,7 +807,7 @@ async def reserve_port(req: ReserveRequest, authorized=Depends(require_admin)):
         audit_log("port.reserved", port=port, owner=req.name, ttl=ttl)
         await emit_event("lease.reserved", port=port, owner=req.name, host=host, url=url)
         
-        logger.info(f"Reserved port {port} for {req.name} (TTL: {ttl}s)")
+        logger.info(f"Reserved port {_log_safe(port)} for {_log_safe(req.name)} (TTL: {ttl}s)")
         
         return LeaseResponse(
             port=port,
@@ -888,7 +894,7 @@ async def bind_port(req: BindRequest, authorized=Depends(require_admin)):
 
     audit_log("port.bound", port=req.port, owner=req.name, pid=req.pid)
     await emit_event("lease.bound", port=req.port, owner=req.name, pid=req.pid, url=url)
-    logger.info(f"Bound port {req.port} to {req.name} (PID: {req.pid})")
+    logger.info(f"Bound port {_log_safe(req.port)} to {_log_safe(req.name)} (PID: {_log_safe(req.pid)})")
 
     return LeaseResponse(
         port=req.port,
@@ -1093,7 +1099,7 @@ async def block_port(req: BlockRequest, authorized=Depends(require_admin)):
     """Block a port: insert a BLOCKED lease and guard the port."""
     if not _bind_guard(req.port):
         # Port is busy — record the block anyway, but surface the conflict.
-        logger.warning(f"Could not fully guard port {req.port} for blocking")
+        logger.warning(f"Could not fully guard port {_log_safe(req.port)} for blocking")
 
     now = int(time.time())
     expires_at = now + req.duration_sec if req.duration_sec else None
@@ -1111,7 +1117,7 @@ async def block_port(req: BlockRequest, authorized=Depends(require_admin)):
 
     audit_log("port.blocked", port=req.port, reason=req.reason, expires_at=expires_at)
     await emit_event("port.blocked", port=req.port, reason=req.reason)
-    logger.info(f"Blocked port {req.port}: {req.reason}")
+    logger.info(f"Blocked port {_log_safe(req.port)}: {_log_safe(req.reason)}")
     return {"port": req.port, "state": "BLOCKED", "reason": req.reason, "expires_at": expires_at}
 
 
@@ -1135,7 +1141,7 @@ async def unblock_port(port: int, authorized=Depends(require_admin)):
     _release_guard(port)
     audit_log("port.unblocked", port=port)
     await emit_event("port.unblocked", port=port)
-    logger.info(f"Unblocked port {port}")
+    logger.info(f"Unblocked port {_log_safe(port)}")
     return {"port": port, "state": "FREE"}
 
 
@@ -1236,7 +1242,7 @@ async def kill_port(req: KillRequest, x_api_key: Optional[str] = Header(None)):
         audit_log("port.killed", port=req.port, pid=target_pid, pids=killed)
         await emit_event("lease.killed", port=req.port, pid=target_pid)
 
-    logger.info(f"Killed PID(s) {killed} on port {req.port}")
+    logger.info(f"Killed PID(s) {_log_safe(killed)} on port {_log_safe(req.port)}")
     return {"port": req.port, "killed_pids": killed}
 
 

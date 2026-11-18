@@ -43,6 +43,14 @@ jobs:
       - name: Build wheel
         run: python -m build
 
+  # Single aggregate check that branch protection can require (matrix job
+  # names are unstable, and each leg reports as its own check run).
+  ci-gate:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "all CI jobs passed"
+
   publish:
     needs: test
     runs-on: ubuntu-latest

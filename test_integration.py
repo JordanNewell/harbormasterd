@@ -938,7 +938,9 @@ if __name__ == '__main__':
         pass
 '''
         
-        script_path = Path(tempfile.mktemp(suffix='.py'))
+        fd, script_name = tempfile.mkstemp(suffix='.py')
+        os.close(fd)
+        script_path = Path(script_name)
         script_path.write_text(script_content)
         return script_path
     
