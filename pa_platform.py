@@ -949,8 +949,9 @@ def selftest(ctx, comprehensive, json_output):
             # Quick spawn test with echo command
             import tempfile
             import sys
-            
-            test_script = tempfile.mktemp(suffix='.py')
+
+            fd, test_script = tempfile.mkstemp(suffix='.py')
+            os.close(fd)
             with open(test_script, 'w') as f:
                 f.write('import time; time.sleep(1); print("Test OK")')
             

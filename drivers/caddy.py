@@ -24,6 +24,11 @@ from contextlib import contextmanager
 logger = logging.getLogger(__name__)
 
 
+def _log_safe(value: object) -> str:
+    """Neutralize control characters so request-derived data can't forge log lines."""
+    return str(value).replace("\n", "\\n").replace("\r", "\\r")
+
+
 class CaddyDriver:
     """Caddy gateway driver with automatic HTTPS and DNS.
 
@@ -335,7 +340,7 @@ class CaddyDriver:
             return self._reload_config()
             
         except Exception as e:
-            logger.error(f"Failed to upsert route {name}: {e}")
+            logger.error(f"Failed to upsert route {_log_safe(name)}: {_log_safe(e)}")
             return False
     
     def remove_route(self, name: str) -> bool:
